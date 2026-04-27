@@ -20,7 +20,10 @@ app.post('/capture-context', async (req, res) => {
             headers: {
                 'Authorization': process.env.MY_TOKEN,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                // THESE TWO LINES BYPASS BANK FIREWALLS
+                'Origin': targetOrigin,
+                'Referer': targetOrigin + '/'
             },
             body: JSON.stringify({
                 targetOrigins: [targetOrigin],
@@ -43,5 +46,5 @@ app.post('/capture-context', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running.`);
+    console.log(`Server running. Target Origin configured as: ${process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000'}`);
 });
