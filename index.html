@@ -22,83 +22,90 @@
         <h2>Test Product</h2>
         <p>Amount: <strong>$1.00 USD</strong></p>
         
-        <div id="payment-container"></div>
+        <div id="payment-form"></div>
         <button id="pay-btn">Pay Now</button>
         <div id="message" class="message"></div>
     </div>
 
     <script>
-        const payBtn = document.getElementById('pay-btn');
-        const messageDiv = document.getElementById('message');
-        const paymentContainer = document.getElementById('payment-container');
-        let up; // Holds the Unified Payments instance
+    const payBtn = document.getElementById('pay-btn');
+    const messageDiv = document.getElementById('message');
+    const paymentContainer = document.getElementById('payment-form'); // Updated ID
+    let up; 
+    let transientToken; // We need to store this now
 
-        payBtn.addEventListener('click', async () => {
-            // Prevent double clicks
-            payBtn.disabled = true;
-            messageDiv.textContent = 'Contacting bank...';
-            messageDiv.className = 'message';
+    payBtn.addEventListener('click', async () => {
+        payBtn.disabled = true;
+        messageDiv.textContent = 'Contacting bank...';
+        messageDiv.className = 'message';
 
-            try {
-                // 1. Get Capture Context from our server.js
-                const response = await fetch('/capture-context', { method: 'POST' });
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error);
-                if (!data.token) throw new Error("No token received from bank");
+        try {
+            // 1. Get Capture Context from our server.js
+            const response = await fetch('/capture-context', { method: 'POST' });
+            const data = await response.json();
+            
+            if (data.error) throw new Error(data.error);
+            if (!data.token) throw new Error("No token received from bank");
 
-                messageDiv.textContent = 'Loading secure form...';
+            messageDiv.textContent = 'Loading secure form...';
 
-                // 2. Initialize Cybersource Unified Checkout
-                const accept = await Accept(data.token);
-                up = await accept.unifiedPayments(false);
+            // 2. Initialize Checkout (Step 3 in PDF)
+            const accept = await Accept(data.token);
+            up = await accept.unifiedPayments();
 
-                // 3. Mount the form into the div
-                await up.show({
-                    containers: {
-                        paymentForm: '#payment-container'
-                    }
-                });
-
-                // Update UI for the final step
-                messageDiv.textContent = '';
-                payBtn.textContent = 'Submit Payment';
-                payBtn.disabled = false;
-
-                // 4. Overwrite button click to process payment
-                payBtn.onclick = processPayment;
-
-            } catch (error) {
-                messageDiv.textContent = `Setup failed: ${error.message}`;
-                messageDiv.className = 'message error';
-                payBtn.disabled = false;
-            }
-        });
-
-        async function processPayment() {
-            payBtn.disabled = true;
-            messageDiv.textContent = 'Processing...';
-            messageDiv.className = 'message';
-
-            try {
-                // Submit the form to Cybersource
-                const result = await up.complete();
-                
-                // Cybersource returns a transient token on success or an error object
-                if (result instanceof Error || result.error) {
-                    throw new Error(result.error || 'Payment rejected by gateway');
+            // 3. Show Payment Form (Step 4 in PDF)
+            // The PDF states this step returns the transient token after card entry
+            messageDiv.textContent = 'Please enter your card details.';
+            transientToken = await up.show({
+                containers: {
+                    paymentSelection: "#payment-form" // Exact key from PDF
                 }
+            });
 
-                messageDiv.textContent = 'Payment successful! (Transient Token Generated)';
-                messageDiv.className = 'message success';
-                console.log("Success Result:", result);
+            // Update UI for the final step
+            messageDiv.textContent = '';
+            payBtn.textContent = 'Complete Payment';
+            payBtn.disabled = false;
 
-            } catch (error) {
-                messageDiv.textContent = `Payment failed: ${error.message}`;
-                messageDiv.className = 'message error';
-                payBtn.disabled = false;
-            }
+            // 4. Overwrite button click to process payment
+            payBtn.onclick = processPayment;
+
+        } catch (error) {
+            messageDiv.textContent = `Setup failed: ${error.message}`;
+            messageDiv.className = 'message error';
+            payBtn.disabled = false;
         }
-    </script>
+    });
+
+    async function processPayment() {
+        payBtn.disabled = true;
+        messageDiv.textContent = 'Processing...';
+        messageDiv.className = 'message';
+
+        try {
+            // 5. Complete Payment (Step 5 in PDF)
+            // Passing the token we got from up.show()
+            const result = await up.complete(transientToken);
+            
+            // 6. Handle Result (Step 6 in PDF)
+            if (result.status === "COMPLETED") {
+                messageDiv.textContent = 'Payment successful';
+                messageDiv.className = 'message success';
+            } else if (result.status === "DECLINED") {
+                messageDiv.textContent = 'Payment failed. Please try again';
+                messageDiv.className = 'message error';
+            } else {
+                throw new Error('3D Secure failed. Payment not completed');
+            }
+
+            console.log("Success Result:", result);
+
+        } catch (error) {
+            messageDiv.textContent = error.message || 'Payment failed. Please try again';
+            messageDiv.className = 'message error';
+            payBtn.disabled = false;
+        }
+    }
+</script>
 </body>
 </html>
