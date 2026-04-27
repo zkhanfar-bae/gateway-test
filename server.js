@@ -11,9 +11,12 @@ app.use(express.static(path.join(__dirname)));
 
 app.post('/capture-context', async (req, res) => {
     try {
-        // Gets the domain and forces removal of trailing slash to satisfy bank security
         let rawOrigin = process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
         const targetOrigin = rawOrigin.replace(/\/$/, '');
+
+        // NEW: Grab the dynamic amount sent from the frontend cart
+        // If it fails to read it, it safely defaults to "0.10"
+        const amountToCharge = req.body.amount || "0.10";
 
         const response = await fetch('https://merchant-order-token.baelab.net/v1/payments/capture-context', {
             method: 'POST',
@@ -21,14 +24,13 @@ app.post('/capture-context', async (req, res) => {
                 'Authorization': process.env.MY_TOKEN,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                // Security headers to ensure Baelab accepts the proxy request
                 'Origin': targetOrigin,
                 'Referer': targetOrigin + '/'
             },
             body: JSON.stringify({
                 targetOrigins: [targetOrigin],
-                totalAmount: '1.00',
-                currency: 'USD'
+                totalAmount: amountToCharge, // Now fully dynamic based on user's cart
+                currency: 'JOD'              // Changed to Jordanian Dinar
             })
         });
 
