@@ -51,19 +51,19 @@
             <div class="product-card">
                 <h3>Basic API Key</h3>
                 <div class="price">0.10 JOD</div>
-                <button class="btn add-to-cart" onclick="addToCart(1, 'Basic API Key', 0.10)">Add to Cart</button>
+                <button type="button" class="btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
             </div>
 
             <div class="product-card">
                 <h3>Pro Dashboard</h3>
                 <div class="price">0.15 JOD</div>
-                <button class="btn add-to-cart" onclick="addToCart(2, 'Pro Dashboard', 0.15)">Add to Cart</button>
+                <button type="button" class="btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
             </div>
 
             <div class="product-card">
                 <h3>Enterprise Support</h3>
                 <div class="price">0.20 JOD</div>
-                <button class="btn add-to-cart" onclick="addToCart(3, 'Enterprise Support', 0.20)">Add to Cart</button>
+                <button type="button" class="btn add-to-cart-btn" data-id="3" data-name="Enterprise Support" data-price="0.20">Add to Cart</button>
             </div>
 
         </div>
@@ -79,13 +79,13 @@
                 <span id="cart-total-price">0.00 JOD</span>
             </div>
 
-            <button id="checkout-btn" class="btn" style="background: #2563eb;" disabled>Proceed to Checkout</button>
+            <button type="button" id="checkout-btn" class="btn" style="background: #2563eb;" disabled>Proceed to Checkout</button>
             <div id="message" class="message" style="display: none;"></div>
 
             <div id="payment-container">
                 <p style="font-size: 14px; font-weight: 600; margin-top: 0;">Enter Card Details</p>
                 <div id="payment-form"></div>
-                <button id="pay-btn" class="btn">Complete Payment</button>
+                <button type="button" id="pay-btn" class="btn">Complete Payment</button>
             </div>
         </div>
     </div>
@@ -102,6 +102,136 @@
         const messageDiv = document.getElementById('message');
         const payBtn = document.getElementById('pay-btn');
 
-        // New foolproof add function
-        function addToCart(id, name, price) {
-            if (isCheckingOut) return; // Prevent changes during payment
+        // Attach event listeners safely
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (isCheckingOut) return;
+                
+                // Parse exact values safely
+                const id = e.target.getAttribute('data-id');
+                const name = e.target.getAttribute('data-name');
+                const price = parseFloat(e.target.getAttribute('data-price'));
+                
+                cart.push({ id, name, price });
+                renderCart();
+            });
+        });
+
+        // Use global window object for remove function so inline HTML can still find it safely
+        window.removeFromCart = function(index) {
+            if (isCheckingOut) return;
+            cart.splice(index, 1);
+            renderCart();
+        };
+
+        function getCartTotal() {
+            // Guarantee we are doing math, not string concatenation
+            let total = cart.reduce((sum, item) => sum + item.price, 0);
+            return total.toFixed(2);
+        }
+
+        function renderCart() {
+            cartItemsDiv.innerHTML = '';
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = '<p style="color: #666; font-size: 14px;">Your cart is empty.</p>';
+                checkoutBtn.disabled = true;
+            } else {
+                cart.forEach((item, index) => {
+                    cartItemsDiv.innerHTML += `
+                        <div class="cart-item">
+                            <span style="font-size: 14px; font-weight: 500;">${item.name}</span>
+                            <div style="text-align: right;">
+                                <span style="font-size: 14px;">${item.price.toFixed(2)} JOD</span><br>
+                                <button class="btn btn-remove" onclick="window.removeFromCart(${index})">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                checkoutBtn.disabled = false;
+            }
+            cartTotalPrice.textContent = `${getCartTotal()} JOD`;
+        }
+
+        function showMessage(text, type) {
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+        }
+
+        // --- 2. CYBERSOURCE PAYMENT LOGIC ---
+        let up; 
+        let transientToken;
+
+        checkoutBtn.addEventListener('click', async () => {
+            isCheckingOut = true; 
+            checkoutBtn.disabled = true;
+            
+            // finalAmount is safely a string like "0.25" here
+            const finalAmount = getCartTotal(); 
+            
+            showMessage('Locking cart & contacting bank...', 'info');
+            
+            // Disable buttons so cart is locked
+            document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
+
+            try {
+                const response = await fetch('/capture-context', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: finalAmount })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                if (!data.token) throw new Error("No token received from bank");
+
+                showMessage('Secure session generated. Please enter card.', 'info');
+                
+                checkoutBtn.style.display = 'none';
+                paymentContainer.style.display = 'block';
+
+                const accept = await Accept(data.token);
+                up = await accept.unifiedPayments();
+
+                transientToken = await up.show({
+                    containers: {
+                        paymentSelection: "#payment-form" 
+                    }
+                });
+
+                messageDiv.style.display = 'none';
+                payBtn.onclick = processPayment;
+
+            } catch (error) {
+                showMessage(`Setup failed: ${error.message}`, 'error');
+                checkoutBtn.disabled = false;
+                isCheckingOut = false;
+                document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = false);
+            }
+        });
+
+        async function processPayment() {
+            payBtn.disabled = true;
+            showMessage('Processing payment...', 'info');
+
+            try {
+                const result = await up.complete(transientToken);
+                
+                if (result.status === "COMPLETED") {
+                    showMessage('Payment successful! Order confirmed.', 'success');
+                    paymentContainer.style.display = 'none';
+                } else if (result.status === "DECLINED") {
+                    showMessage('Payment failed. Card declined.', 'error');
+                    payBtn.disabled = false;
+                } else {
+                    throw new Error('3D Secure failed or cancelled.');
+                }
+            } catch (error) {
+                showMessage(error.message || 'Payment failed.', 'error');
+                payBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
