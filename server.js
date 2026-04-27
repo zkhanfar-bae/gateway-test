@@ -11,24 +11,24 @@ app.use(express.static(path.join(__dirname)));
 
 app.post('/capture-context', async (req, res) => {
     try {
-        // 1. Get origin and FORCE remove any trailing slash
+        // Gets the domain and forces removal of trailing slash to satisfy bank security
         let rawOrigin = process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
         const targetOrigin = rawOrigin.replace(/\/$/, '');
 
         const response = await fetch('https://merchant-order-token.baelab.net/v1/payments/capture-context', {
             method: 'POST',
             headers: {
-                'Authorization': {'ODgxMDI3MzQ0OnZBMGpLIUQlOUAuZTN0Q1hkQlQyb1p2fmV3PTJ5Lg=='},
+                'Authorization': process.env.MY_TOKEN,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                // THESE TWO LINES BYPASS BANK FIREWALLS
+                // Security headers to ensure Baelab accepts the proxy request
                 'Origin': targetOrigin,
                 'Referer': targetOrigin + '/'
             },
             body: JSON.stringify({
                 targetOrigins: [targetOrigin],
-                totalAmount: '0.1',
-                currency: 'JOD'
+                totalAmount: '1.00',
+                currency: 'USD'
             })
         });
 
