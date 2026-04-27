@@ -18,7 +18,7 @@ app.post('/capture-context', async (req, res) => {
         const response = await fetch('https://merchant-order-token.baelab.net/v1/payments/capture-context', {
             method: 'POST',
             headers: {
-                'Authorization': {"ODgxMDI3MzQ0OnZBMGpLIUQlOUAuZTN0Q1hkQlQyb1p2fmV3PTJ5Lg=="},
+                'Authorization': {ODgxMDI3MzQ0OnZBMGpLIUQlOUAuZTN0Q1hkQlQyb1p2fmV3PTJ5Lg==},
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 // THESE TWO LINES BYPASS BANK FIREWALLS
