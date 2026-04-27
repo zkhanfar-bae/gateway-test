@@ -19,6 +19,7 @@
         .price { color: #2563eb; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; }
         .btn { background: #000; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; transition: background 0.2s;}
         .btn:hover { background: #333; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
         .btn-remove { background: #dc2626; padding: 5px 10px; font-size: 12px; margin-top: 5px; }
         .btn-remove:hover { background: #b91c1c; }
         
@@ -46,7 +47,26 @@
         </div>
 
         <div class="products" id="product-list">
+            
+            <div class="product-card">
+                <h3>Basic API Key</h3>
+                <div class="price">0.10 JOD</div>
+                <button class="btn add-to-cart" onclick="addToCart(1, 'Basic API Key', 0.10)">Add to Cart</button>
             </div>
+
+            <div class="product-card">
+                <h3>Pro Dashboard</h3>
+                <div class="price">0.15 JOD</div>
+                <button class="btn add-to-cart" onclick="addToCart(2, 'Pro Dashboard', 0.15)">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <h3>Enterprise Support</h3>
+                <div class="price">0.20 JOD</div>
+                <button class="btn add-to-cart" onclick="addToCart(3, 'Enterprise Support', 0.20)">Add to Cart</button>
+            </div>
+
+        </div>
 
         <div class="cart-section">
             <h3>Your Cart</h3>
@@ -72,16 +92,9 @@
 
     <script>
         // --- 1. STORE & CART LOGIC ---
-        const products = [
-            { id: 1, name: "Basic API Key", price: 0.10 },
-            { id: 2, name: "Pro Dashboard", price: 0.15 },
-            { id: 3, name: "Enterprise Support", price: 0.20 }
-        ];
-        
         let cart = [];
         let isCheckingOut = false;
 
-        const productList = document.getElementById('product-list');
         const cartItemsDiv = document.getElementById('cart-items');
         const cartTotalPrice = document.getElementById('cart-total-price');
         const checkoutBtn = document.getElementById('checkout-btn');
@@ -89,109 +102,6 @@
         const messageDiv = document.getElementById('message');
         const payBtn = document.getElementById('pay-btn');
 
-        // Render products to screen
-        products.forEach(p => {
-            productList.innerHTML += `
-                <div class="product-card">
-                    <h3>${p.name}</h3>
-                    <div class="price">${p.price.toFixed(2)} JOD</div>
-                    <button class="btn add-to-cart" onclick="addToCart(${p.id})">Add to Cart</button>
-                </div>
-            `;
-        });
-
-        function addToCart(id) {
+        // New foolproof add function
+        function addToCart(id, name, price) {
             if (isCheckingOut) return; // Prevent changes during payment
-            const product = products.find(p => p.id === id);
-            cart.push(product);
-            renderCart();
-        }
-
-        function removeFromCart(index) {
-            if (isCheckingOut) return;
-            cart.splice(index, 1);
-            renderCart();
-        }
-
-        function getCartTotal() {
-            return cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
-        }
-
-        function renderCart() {
-            cartItemsDiv.innerHTML = '';
-            if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: #666; font-size: 14px;">Your cart is empty.</p>';
-                checkoutBtn.disabled = true;
-            } else {
-                cart.forEach((item, index) => {
-                    cartItemsDiv.innerHTML += `
-                        <div class="cart-item">
-                            <span style="font-size: 14px; font-weight: 500;">${item.name}</span>
-                            <div style="text-align: right;">
-                                <span style="font-size: 14px;">${item.price.toFixed(2)} JOD</span><br>
-                                <button class="btn btn-remove" onclick="removeFromCart(${index})">Remove</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                checkoutBtn.disabled = false;
-            }
-            cartTotalPrice.textContent = `${getCartTotal()} JOD`;
-        }
-
-        function showMessage(text, type) {
-            messageDiv.style.display = 'block';
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-        }
-
-        // --- 2. CYBERSOURCE PAYMENT LOGIC ---
-        let up; 
-        let transientToken;
-
-        checkoutBtn.addEventListener('click', async () => {
-            isCheckingOut = true; // Lock the cart
-            checkoutBtn.disabled = true;
-            const finalAmount = getCartTotal();
-            
-            showMessage('Locking cart & contacting bank...', 'info');
-            
-            // Disable all add/remove buttons
-            document.querySelectorAll('.add-to-cart, .btn-remove').forEach(b => b.disabled = true);
-
-            try {
-                // We now send the DYNAMIC amount to the backend
-                const response = await fetch('/capture-context', { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: finalAmount })
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error);
-                if (!data.token) throw new Error("No token received from bank");
-
-                showMessage('Secure session generated. Please enter card.', 'info');
-                
-                // Show the payment UI area
-                checkoutBtn.style.display = 'none';
-                paymentContainer.style.display = 'block';
-
-                const accept = await Accept(data.token);
-                up = await accept.unifiedPayments();
-
-                transientToken = await up.show({
-                    containers: {
-                        paymentSelection: "#payment-form" 
-                    }
-                });
-
-                // Clear info message once form loads
-                messageDiv.style.display = 'none';
-                payBtn.onclick = processPayment;
-
-            } catch (error) {
-                showMessage(`Setup failed: ${error.message}`, 'error');
-                checkoutBtn.disabled = false;
-                isCheckingOut = false;
