@@ -3,111 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Payment</title>
-    <script
-src="https://flex.cybersource.com/cybersource-unified-checkout.min.js">
-</script>
+    <title>TechStore | Checkout</title>
+    <script src="https://flex.cybersource.com/cybersource/assets/microform/0.11/flex-microform.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f3f4f6; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        #payment-container { margin: 20px 0; min-height: 50px; text-align: left; }
-        button { background: #000; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .message { margin-top: 15px; font-weight: 500; font-size: 14px; }
-        .success { color: #16a34a; }
-        .error { color: #dc2626; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        
+        /* Store UI */
+        .header { grid-column: 1 / -1; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 10px; text-align: center;}
+        .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .product-card { background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .product-card h3 { margin: 0 0 10px 0; font-size: 18px; }
+        .price { color: #2563eb; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; }
+        .btn { background: #000; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; transition: background 0.2s;}
+        .btn:hover { background: #333; }
+        .btn-remove { background: #dc2626; padding: 5px 10px; font-size: 12px; margin-top: 5px; }
+        .btn-remove:hover { background: #b91c1c; }
+        
+        /* Cart UI */
+        .cart-section { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: fit-content; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-total { font-size: 1.2rem; font-weight: bold; margin: 20px 0; display: flex; justify-content: space-between; border-top: 2px solid #eee; padding-top: 15px;}
+        
+        /* Payment UI */
+        #payment-container { display: none; margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;}
+        #payment-form { min-height: 50px; margin-bottom: 15px; }
+        .message { margin-top: 15px; font-weight: 500; font-size: 14px; text-align: center; padding: 10px; border-radius: 6px;}
+        .success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;}
+        .error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;}
+        .info { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;}
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Test Product</h2>
-        <p>Amount: <strong>0.1 JOD</strong></p>
-        
-        <div id="payment-form"></div>
-        <button id="pay-btn">Pay Now</button>
-        <div id="message" class="message"></div>
+    <div class="container">
+        <div class="header">
+            <h2>Welcome to TechStore Demo</h2>
+            <p>Testing Baelab Unified Checkout</p>
+        </div>
+
+        <div class="products" id="product-list">
+            </div>
+
+        <div class="cart-section">
+            <h3>Your Cart</h3>
+            <div id="cart-items">
+                <p style="color: #666; font-size: 14px;">Your cart is empty.</p>
+            </div>
+            
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">0.00 JOD</span>
+            </div>
+
+            <button id="checkout-btn" class="btn" style="background: #2563eb;" disabled>Proceed to Checkout</button>
+            <div id="message" class="message" style="display: none;"></div>
+
+            <div id="payment-container">
+                <p style="font-size: 14px; font-weight: 600; margin-top: 0;">Enter Card Details</p>
+                <div id="payment-form"></div>
+                <button id="pay-btn" class="btn">Complete Payment</button>
+            </div>
+        </div>
     </div>
 
     <script>
-    const payBtn = document.getElementById('pay-btn');
-    const messageDiv = document.getElementById('message');
-    const paymentContainer = document.getElementById('payment-form'); // Updated ID
-    let up; 
-    let transientToken; // We need to store this now
+        // --- 1. STORE & CART LOGIC ---
+        const products = [
+            { id: 1, name: "Basic API Key", price: 0.10 },
+            { id: 2, name: "Pro Dashboard", price: 0.15 },
+            { id: 3, name: "Enterprise Support", price: 0.20 }
+        ];
+        
+        let cart = [];
+        let isCheckingOut = false;
 
-    payBtn.addEventListener('click', async () => {
-        payBtn.disabled = true;
-        messageDiv.textContent = 'Contacting bank...';
-        messageDiv.className = 'message';
+        const productList = document.getElementById('product-list');
+        const cartItemsDiv = document.getElementById('cart-items');
+        const cartTotalPrice = document.getElementById('cart-total-price');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const paymentContainer = document.getElementById('payment-container');
+        const messageDiv = document.getElementById('message');
+        const payBtn = document.getElementById('pay-btn');
 
-        try {
-            // 1. Get Capture Context from our server.js
-            const response = await fetch('/capture-context', { method: 'POST' });
-            const data = await response.json();
-            
-            if (data.error) throw new Error(data.error);
-            if (!data.token) throw new Error("No token received from bank");
+        // Render products to screen
+        products.forEach(p => {
+            productList.innerHTML += `
+                <div class="product-card">
+                    <h3>${p.name}</h3>
+                    <div class="price">${p.price.toFixed(2)} JOD</div>
+                    <button class="btn add-to-cart" onclick="addToCart(${p.id})">Add to Cart</button>
+                </div>
+            `;
+        });
 
-            messageDiv.textContent = 'Loading secure form...';
-
-            // 2. Initialize Checkout (Step 3 in PDF)
-            const accept = await Accept(data.token);
-            up = await accept.unifiedPayments();
-
-            // 3. Show Payment Form (Step 4 in PDF)
-            // The PDF states this step returns the transient token after card entry
-            messageDiv.textContent = 'Please enter your card details.';
-            transientToken = await up.show({
-                containers: {
-                    paymentSelection: "#payment-form" // Exact key from PDF
-                }
-            });
-
-            // Update UI for the final step
-            messageDiv.textContent = '';
-            payBtn.textContent = 'Complete Payment';
-            payBtn.disabled = false;
-
-            // 4. Overwrite button click to process payment
-            payBtn.onclick = processPayment;
-
-        } catch (error) {
-            messageDiv.textContent = `Setup failed: ${error.message}`;
-            messageDiv.className = 'message error';
-            payBtn.disabled = false;
+        function addToCart(id) {
+            if (isCheckingOut) return; // Prevent changes during payment
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            renderCart();
         }
-    });
 
-    async function processPayment() {
-        payBtn.disabled = true;
-        messageDiv.textContent = 'Processing...';
-        messageDiv.className = 'message';
+        function removeFromCart(index) {
+            if (isCheckingOut) return;
+            cart.splice(index, 1);
+            renderCart();
+        }
 
-        try {
-            // 5. Complete Payment (Step 5 in PDF)
-            // Passing the token we got from up.show()
-            const result = await up.complete(transientToken);
-            
-            // 6. Handle Result (Step 6 in PDF)
-            if (result.status === "COMPLETED") {
-                messageDiv.textContent = 'Payment successful';
-                messageDiv.className = 'message success';
-            } else if (result.status === "DECLINED") {
-                messageDiv.textContent = 'Payment failed. Please try again';
-                messageDiv.className = 'message error';
+        function getCartTotal() {
+            return cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+        }
+
+        function renderCart() {
+            cartItemsDiv.innerHTML = '';
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = '<p style="color: #666; font-size: 14px;">Your cart is empty.</p>';
+                checkoutBtn.disabled = true;
             } else {
-                throw new Error('3D Secure failed. Payment not completed');
+                cart.forEach((item, index) => {
+                    cartItemsDiv.innerHTML += `
+                        <div class="cart-item">
+                            <span style="font-size: 14px; font-weight: 500;">${item.name}</span>
+                            <div style="text-align: right;">
+                                <span style="font-size: 14px;">${item.price.toFixed(2)} JOD</span><br>
+                                <button class="btn btn-remove" onclick="removeFromCart(${index})">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                checkoutBtn.disabled = false;
             }
-
-            console.log("Success Result:", result);
-
-        } catch (error) {
-            messageDiv.textContent = error.message || 'Payment failed. Please try again';
-            messageDiv.className = 'message error';
-            payBtn.disabled = false;
+            cartTotalPrice.textContent = `${getCartTotal()} JOD`;
         }
-    }
-</script>
-</body>
-</html>
+
+        function showMessage(text, type) {
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+        }
+
+        // --- 2. CYBERSOURCE PAYMENT LOGIC ---
+        let up; 
+        let transientToken;
+
+        checkoutBtn.addEventListener('click', async () => {
+            isCheckingOut = true; // Lock the cart
+            checkoutBtn.disabled = true;
+            const finalAmount = getCartTotal();
+            
+            showMessage('Locking cart & contacting bank...', 'info');
+            
+            // Disable all add/remove buttons
+            document.querySelectorAll('.add-to-cart, .btn-remove').forEach(b => b.disabled = true);
+
+            try {
+                // We now send the DYNAMIC amount to the backend
+                const response = await fetch('/capture-context', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: finalAmount })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                if (!data.token) throw new Error("No token received from bank");
+
+                showMessage('Secure session generated. Please enter card.', 'info');
+                
+                // Show the payment UI area
+                checkoutBtn.style.display = 'none';
+                paymentContainer.style.display = 'block';
+
+                const accept = await Accept(data.token);
+                up = await accept.unifiedPayments();
+
+                transientToken = await up.show({
+                    containers: {
+                        paymentSelection: "#payment-form" 
+                    }
+                });
+
+                // Clear info message once form loads
+                messageDiv.style.display = 'none';
+                payBtn.onclick = processPayment;
+
+            } catch (error) {
+                showMessage(`Setup failed: ${error.message}`, 'error');
+                checkoutBtn.disabled = false;
+                isCheckingOut = false;
