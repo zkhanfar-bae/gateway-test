@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment</title>
+    <script src="https://flex.cybersource.com/cybersource-unified-checkout.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f3f4f6; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        #payment-container { margin: 20px 0; min-height: 50px; text-align: left; }
+        button { background: #000; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .message { margin-top: 15px; font-weight: 500; font-size: 14px; }
+        .success { color: #16a34a; }
+        .error { color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Test Product</h2>
+        <p>Amount: <strong>$1.00 USD</strong></p>
+        
+        <div id="payment-container"></div>
+        <button id="pay-btn">Pay Now</button>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        const payBtn = document.getElementById('pay-btn');
+        const messageDiv = document.getElementById('message');
+        const paymentContainer = document.getElementById('payment-container');
+        let up; // Holds the Unified Payments instance
+
+        payBtn.addEventListener('click', async () => {
+            // Prevent double clicks
+            payBtn.disabled = true;
+            messageDiv.textContent = 'Contacting bank...';
+            messageDiv.className = 'message';
+
+            try {
+                // 1. Get Capture Context from our server.js
+                const response = await fetch('/capture-context', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                if (!data.token) throw new Error("No token received from bank");
+
+                messageDiv.textContent = 'Loading secure form...';
+
+                // 2. Initialize Cybersource Unified Checkout
+                const accept = await Accept(data.token);
+                up = await accept.unifiedPayments(false);
+
+                // 3. Mount the form into the div
+                await up.show({
+                    containers: {
+                        paymentForm: '#payment-container'
+                    }
+                });
+
+                // Update UI for the final step
+                messageDiv.textContent = '';
+                payBtn.textContent = 'Submit Payment';
+                payBtn.disabled = false;
+
+                // 4. Overwrite button click to process payment
+                payBtn.onclick = processPayment;
+
+            } catch (error) {
+                messageDiv.textContent = `Setup failed: ${error.message}`;
+                messageDiv.className = 'message error';
+                payBtn.disabled = false;
+            }
+        });
+
+        async function processPayment() {
+            payBtn.disabled = true;
+            messageDiv.textContent = 'Processing...';
+            messageDiv.className = 'message';
+
+            try {
+                // Submit the form to Cybersource
+                const result = await up.complete();
+                
+                // Cybersource returns a transient token on success or an error object
+                if (result instanceof Error || result.error) {
+                    throw new Error(result.error || 'Payment rejected by gateway');
+                }
+
+                messageDiv.textContent = 'Payment successful! (Transient Token Generated)';
+                messageDiv.className = 'message success';
+                console.log("Success Result:", result);
+
+            } catch (error) {
+                messageDiv.textContent = `Payment failed: ${error.message}`;
+                messageDiv.className = 'message error';
+                payBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
