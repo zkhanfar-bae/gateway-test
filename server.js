@@ -7,14 +7,13 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-// Serve the index.html file
 app.use(express.static(path.join(__dirname)));
 
 app.post('/capture-context', async (req, res) => {
     try {
-        // Dynamically set targetOrigin to prevent CORS/JWT errors
-        // Prioritizes Custom Domain -> Render Auto Domain -> Localhost
-        const targetOrigin = process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+        // 1. Get origin and FORCE remove any trailing slash
+        let rawOrigin = process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+        const targetOrigin = rawOrigin.replace(/\/$/, '');
 
         const response = await fetch('https://merchant-order-token.baelab.net/v1/payments/capture-context', {
             method: 'POST',
@@ -44,5 +43,5 @@ app.post('/capture-context', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running. Target Origin configured as: ${process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000'}`);
+    console.log(`Server running.`);
 });
