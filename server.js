@@ -9,44 +9,44 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// ROUTE 1: Generate the Capture Context (Now using LIVE Production)
+// ROUTE 1: Generate the Capture Context (LIVE Production)
 app.post('/capture-context', async (req, res) => {
     try {
-        let rawOrigin = process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
-        const targetOrigin = rawOrigin.replace(/\/$/, '');
+        // Dynamically grab the exact URL the user is visiting from (like your colleague's code)
+        const targetOrigin = req.body.origin || process.env.CUSTOM_DOMAIN || 'http://localhost:3000';
         const amountToCharge = req.body.amount || "0.10";
 
         const response = await fetch('https://merchant-order-token.bankaletihad.com/v1/payments/app2/capture-context', {
             method: 'POST',
             headers: {
-                'Authorization': process.env.MY_TOKEN, // Make sure to update this in Render!
+                'Authorization': process.env.MY_TOKEN, // The LIVE token from Render
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Origin': targetOrigin,
-                'Referer': targetOrigin + '/'
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
-                targetOrigins: [targetOrigin], // Dynamically matches your Render URL
+                targetOrigins: [targetOrigin],
                 allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"],
                 totalAmount: amountToCharge,
                 currency: 'JOD'
             })
         });
 
+        // CRITICAL FIX: Live API returns raw text, not JSON. Read as text!
+        const rawText = await response.text();
+
         if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`Bank API error: ${response.status} - ${errText}`);
+            throw new Error(`Bank API error: ${response.status} - ${rawText}`);
         }
 
-        const data = await response.json();
-        res.json(data);
+        // Send the exact text back to the frontend
+        res.send(rawText);
     } catch (error) {
         console.error('Error fetching capture context:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// ROUTE 2: Process the Final Live Payment (The missing step!)
+// ROUTE 2: Process the Final Live Payment
 app.post('/process-payment', async (req, res) => {
     try {
         const response = await fetch('https://api.apps-console.bankaletihad.com/BAF3E974-52AA-7598-FF04-56945EF93500/045FCC75-62A0-EE53-FF87-4FD683745500/services/businessMarketplace/pay/hostedCheckout', {
@@ -57,8 +57,8 @@ app.post('/process-payment', async (req, res) => {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                token: req.body.transientToken, // The token from Cybersource 3DS
-                companyId: "6361F8DC-BCAE-4D4A-B903-7B8121A47922" // Your Live Company ID
+                token: req.body.transientToken,
+                companyId: "6361F8DC-BCAE-4D4A-B903-7B8121A47922"
             })
         });
 
@@ -68,7 +68,7 @@ app.post('/process-payment', async (req, res) => {
              throw new Error(`Final charge failed: ${data}`);
         }
 
-        res.json({ success: true, data: data });
+        res.send(data);
     } catch (error) {
         console.error('Error processing payment:', error);
         res.status(500).json({ error: error.message });
@@ -76,5 +76,5 @@ app.post('/process-payment', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running. Target Origin configured as: ${process.env.CUSTOM_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000'}`);
+    console.log(`Server running on port ${port}`);
 });
