@@ -229,37 +229,57 @@
             }
         });
 
-        async function processPayment() {
+       async function processPayment() {
             payBtn.disabled = true;
             showMessage('Authenticating 3DS...', 'info');
 
             try {
                 const completeResult = await up.complete(transientToken);
+                console.log("Raw Bank Result:", completeResult); // Helpful for your console
                 
-                if (completeResult.status === "COMPLETED" || completeResult.status === "AUTHORIZED") {
+                let paymentStatus = completeResult.status;
+
+                // If the bank returns a JWT string (common for Google Pay / Live), decode it!
+                if (typeof completeResult === 'string' && completeResult.includes('.')) {
+                    try {
+                        const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
+                        // Sometimes Cybersource uses 'outcome' instead of 'status'
+                        paymentStatus = decodedPayload.status || decodedPayload.outcome; 
+                    } catch (e) {
+                        console.warn("Could not decode JWT");
+                    }
+                }
+
+                // Now safely check the status
+                if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
                     
                     showMessage('Processing live charge...', 'info');
                     
-                    const finalChargeResponse = await fetch('/process-payment', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ transientToken: completeResult })
-                    });
+                    // Only run the backend charge if it wasn't auto-charged by Google/Apple Pay
+                    if (paymentStatus !== "AUTHORIZED") {
+                        const finalChargeResponse = await fetch('/process-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ transientToken: completeResult })
+                        });
 
-                    const chargeResultRaw = await finalChargeResponse.text();
+                        const chargeResultRaw = await finalChargeResponse.text();
 
-                    if (!finalChargeResponse.ok) {
-                        throw new Error(`Charge Failed: ${chargeResultRaw}`);
+                        if (!finalChargeResponse.ok) {
+                            throw new Error(`Charge Failed: ${chargeResultRaw}`);
+                        }
                     }
 
+                    // The glorious green success message
                     showMessage('Payment successful! Order confirmed.', 'success');
                     paymentContainer.style.display = 'none';
                     
-                } else if (completeResult.status === "DECLINED") {
+                } else if (paymentStatus === "DECLINED") {
                     showMessage('Payment failed. Card declined.', 'error');
                     payBtn.disabled = false;
                 } else {
-                    throw new Error('3D Secure failed or cancelled.');
+                    // Let's print exactly what it returned so we aren't guessing
+                    throw new Error(`Payment failed. Bank returned status: ${paymentStatus || 'Unknown'}`);
                 }
             } catch (error) {
                 showMessage(error.message || 'Payment failed.', 'error');
