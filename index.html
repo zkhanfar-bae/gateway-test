@@ -156,7 +156,6 @@
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
 
             try {
-                // NEW: Send the window origin dynamically
                 const response = await fetch('/capture-context', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -167,7 +166,6 @@
                 });
                 
                 const rawText = await response.text();
-                console.log("Raw Bank Response:", rawText); // For your console
                 
                 if (!response.ok) {
                     try {
@@ -178,7 +176,6 @@
                     }
                 }
                 
-                // NEW: Extract token safely, exactly like your colleague's code
                 let tokenRaw;
                 try {
                     const parsedData = JSON.parse(rawText);
@@ -187,13 +184,31 @@
                     tokenRaw = rawText.replace(/^"|"$/g, "").trim();
                 }
 
-                if (!tokenRaw) throw new Error("Could not parse token. Backend returned: " + rawText.substring(0, 50));
+                if (!tokenRaw) throw new Error("Could not parse token.");
 
-                showMessage('Secure session generated. Please enter card.', 'info');
+                showMessage('Token received. Downloading secure SDK...', 'info');
+                
+                // 1. DECODE THE TOKEN TO FIND BAE'S CUSTOM SDK URL
+                const payloadBase64 = tokenRaw.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                const sdkUrl = decodedPayload.ctx[0].data.clientLibrary;
+
+                // 2. DYNAMICALLY INJECT THE SCRIPT INTO THE PAGE
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement("script");
+                    script.src = sdkUrl;
+                    script.async = true;
+                    script.onload = () => setTimeout(resolve, 200); // Give it 200ms to initialize
+                    script.onerror = () => reject(new Error("Failed to load bank SDK"));
+                    document.body.appendChild(script);
+                });
+
+                showMessage('Rendering secure fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
 
+                // 3. NOW "ACCEPT" WILL BE DEFINED!
                 const accept = await Accept(tokenRaw);
                 up = await accept.unifiedPayments();
 
