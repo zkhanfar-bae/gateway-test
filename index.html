@@ -11,7 +11,6 @@
         .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
         
-        /* Store UI */
         .header { grid-column: 1 / -1; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 10px; text-align: center;}
         .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .product-card { background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -23,13 +22,11 @@
         .btn-remove { background: #dc2626; padding: 5px 10px; font-size: 12px; margin-top: 5px; }
         .btn-remove:hover { background: #b91c1c; }
         
-        /* Cart UI */
         .cart-section { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: fit-content; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
         .cart-item:last-child { border-bottom: none; }
         .cart-total { font-size: 1.2rem; font-weight: bold; margin: 20px 0; display: flex; justify-content: space-between; border-top: 2px solid #eee; padding-top: 15px;}
         
-        /* Payment UI */
         #payment-container { display: none; margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;}
         #payment-form { min-height: 50px; margin-bottom: 15px; }
         .message { margin-top: 15px; font-weight: 500; font-size: 14px; text-align: center; padding: 10px; border-radius: 6px;}
@@ -43,29 +40,25 @@
     <div class="container">
         <div class="header">
             <h2>Welcome to TechStore Demo</h2>
-            <p>Testing Baelab Unified Checkout</p>
+            <p>Testing Baelab Unified Checkout <span style="color: #16a34a; font-weight: bold; font-size: 12px; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">LIVE</span></p>
         </div>
 
         <div class="products" id="product-list">
-            
             <div class="product-card">
                 <h3>Basic API Key</h3>
                 <div class="price">0.10 JOD</div>
                 <button type="button" class="btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <h3>Pro Dashboard</h3>
                 <div class="price">0.15 JOD</div>
                 <button type="button" class="btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <h3>Enterprise Support</h3>
                 <div class="price">0.20 JOD</div>
                 <button type="button" class="btn add-to-cart-btn" data-id="3" data-name="Enterprise Support" data-price="0.20">Add to Cart</button>
             </div>
-
         </div>
 
         <div class="cart-section">
@@ -91,7 +84,6 @@
     </div>
 
     <script>
-        // --- 1. STORE & CART LOGIC ---
         let cart = [];
         let isCheckingOut = false;
 
@@ -102,22 +94,17 @@
         const messageDiv = document.getElementById('message');
         const payBtn = document.getElementById('pay-btn');
 
-        // Attach event listeners safely
         document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 if (isCheckingOut) return;
-                
-                // Parse exact values safely
                 const id = e.target.getAttribute('data-id');
                 const name = e.target.getAttribute('data-name');
                 const price = parseFloat(e.target.getAttribute('data-price'));
-                
                 cart.push({ id, name, price });
                 renderCart();
             });
         });
 
-        // Use global window object for remove function so inline HTML can still find it safely
         window.removeFromCart = function(index) {
             if (isCheckingOut) return;
             cart.splice(index, 1);
@@ -125,7 +112,6 @@
         };
 
         function getCartTotal() {
-            // Guarantee we are doing math, not string concatenation
             let total = cart.reduce((sum, item) => sum + item.price, 0);
             return total.toFixed(2);
         }
@@ -158,20 +144,15 @@
             messageDiv.className = `message ${type}`;
         }
 
-        // --- 2. CYBERSOURCE PAYMENT LOGIC ---
         let up; 
         let transientToken;
 
         checkoutBtn.addEventListener('click', async () => {
             isCheckingOut = true; 
             checkoutBtn.disabled = true;
-            
-            // finalAmount is safely a string like "0.25" here
             const finalAmount = getCartTotal(); 
             
-            showMessage('Locking cart & contacting bank...', 'info');
-            
-            // Disable buttons so cart is locked
+            showMessage('Locking cart & contacting live proxy...', 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
 
             try {
@@ -182,16 +163,17 @@
                 });
                 
                 const data = await response.json();
-                
                 if (data.error) throw new Error(data.error);
-                if (!data.token) throw new Error("No token received from bank");
+                
+                let tokenRaw = typeof data === 'string' ? data : data.token;
+                if (!tokenRaw) throw new Error("No token received from bank");
 
                 showMessage('Secure session generated. Please enter card.', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
 
-                const accept = await Accept(data.token);
+                const accept = await Accept(tokenRaw);
                 up = await accept.unifiedPayments();
 
                 transientToken = await up.show({
@@ -213,15 +195,34 @@
 
         async function processPayment() {
             payBtn.disabled = true;
-            showMessage('Processing payment...', 'info');
+            showMessage('Authenticating 3DS...', 'info');
 
             try {
-                const result = await up.complete(transientToken);
+                // Step 1: Complete the Cybersource 3DS flow
+                const completeResult = await up.complete(transientToken);
                 
-                if (result.status === "COMPLETED") {
+                // If it successfully authenticated, proceed to hit the custom BAE backend API
+                if (completeResult.status === "COMPLETED" || completeResult.status === "AUTHORIZED") {
+                    
+                    showMessage('Processing live charge...', 'info');
+                    
+                    // Step 2: The Missing Step - Send to our backend to hit BAE's HostedCheckout
+                    const finalChargeResponse = await fetch('/process-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transientToken: completeResult })
+                    });
+
+                    const chargeResult = await finalChargeResponse.json();
+
+                    if (chargeResult.error) {
+                        throw new Error(chargeResult.error);
+                    }
+
                     showMessage('Payment successful! Order confirmed.', 'success');
                     paymentContainer.style.display = 'none';
-                } else if (result.status === "DECLINED") {
+                    
+                } else if (completeResult.status === "DECLINED") {
                     showMessage('Payment failed. Card declined.', 'error');
                     payBtn.disabled = false;
                 } else {
