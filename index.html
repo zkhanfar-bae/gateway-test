@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechStore | Checkout</title>
     <link rel="icon" href="data:,">
-    <script src="https://flex.cybersource.com/cybersource/assets/microform/0.11/flex-microform.min.js"></script>
+    
+    <script src="https://flex.cybersource.com/cybersource-unified-checkout.min.js"></script>
+    
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
@@ -83,6 +85,7 @@
             </div>
         </div>
     </div>
+
     <script>
         let cart = [];
         let isCheckingOut = false;
@@ -186,29 +189,14 @@
 
                 if (!tokenRaw) throw new Error("Could not parse token.");
 
-                showMessage('Token received. Downloading secure SDK...', 'info');
-                
-                // 1. DECODE THE TOKEN TO FIND BAE'S CUSTOM SDK URL
-                const payloadBase64 = tokenRaw.split('.')[1];
-                const decodedPayload = JSON.parse(atob(payloadBase64));
-                const sdkUrl = decodedPayload.ctx[0].data.clientLibrary;
-
-                // 2. DYNAMICALLY INJECT THE SCRIPT INTO THE PAGE
-                await new Promise((resolve, reject) => {
-                    const script = document.createElement("script");
-                    script.src = sdkUrl;
-                    script.async = true;
-                    script.onload = () => setTimeout(resolve, 200); // Give it 200ms to initialize
-                    script.onerror = () => reject(new Error("Failed to load bank SDK"));
-                    document.body.appendChild(script);
-                });
-
                 showMessage('Rendering secure fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
 
-                // 3. NOW "ACCEPT" WILL BE DEFINED!
+                // Because your supervisor gave you the exact script in the <head>,
+                // we no longer have to dynamically decode/download it here!
+                // We just call Accept immediately.
                 const accept = await Accept(tokenRaw);
                 up = await accept.unifiedPayments();
 
@@ -229,33 +217,27 @@
             }
         });
 
-       async function processPayment() {
+        async function processPayment() {
             payBtn.disabled = true;
             showMessage('Authenticating 3DS...', 'info');
 
             try {
                 const completeResult = await up.complete(transientToken);
-                console.log("Raw Bank Result:", completeResult); // Helpful for your console
-                
                 let paymentStatus = completeResult.status;
 
-                // If the bank returns a JWT string (common for Google Pay / Live), decode it!
                 if (typeof completeResult === 'string' && completeResult.includes('.')) {
                     try {
                         const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
-                        // Sometimes Cybersource uses 'outcome' instead of 'status'
                         paymentStatus = decodedPayload.status || decodedPayload.outcome; 
                     } catch (e) {
                         console.warn("Could not decode JWT");
                     }
                 }
 
-                // Now safely check the status
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
                     
                     showMessage('Processing live charge...', 'info');
                     
-                    // Only run the backend charge if it wasn't auto-charged by Google/Apple Pay
                     if (paymentStatus !== "AUTHORIZED") {
                         const finalChargeResponse = await fetch('/process-payment', {
                             method: 'POST',
@@ -270,7 +252,6 @@
                         }
                     }
 
-                    // The glorious green success message
                     showMessage('Payment successful! Order confirmed.', 'success');
                     paymentContainer.style.display = 'none';
                     
@@ -278,7 +259,6 @@
                     showMessage('Payment failed. Card declined.', 'error');
                     payBtn.disabled = false;
                 } else {
-                    // Let's print exactly what it returned so we aren't guessing
                     throw new Error(`Payment failed. Bank returned status: ${paymentStatus || 'Unknown'}`);
                 }
             } catch (error) {
