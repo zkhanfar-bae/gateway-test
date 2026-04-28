@@ -83,7 +83,6 @@
             </div>
         </div>
     </div>
-
     <script>
         let cart = [];
         let isCheckingOut = false;
@@ -157,17 +156,38 @@
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
 
             try {
+                // NEW: Send the window origin dynamically
                 const response = await fetch('/capture-context', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: finalAmount })
+                    body: JSON.stringify({ 
+                        amount: finalAmount,
+                        origin: window.location.origin
+                    })
                 });
                 
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
+                const rawText = await response.text();
+                console.log("Raw Bank Response:", rawText); // For your console
                 
-                let tokenRaw = typeof data === 'string' ? data : data.token;
-                if (!tokenRaw) throw new Error("No token received from bank");
+                if (!response.ok) {
+                    try {
+                        const errJson = JSON.parse(rawText);
+                        throw new Error(errJson.error || "Server Error");
+                    } catch(e) {
+                        throw new Error(rawText);
+                    }
+                }
+                
+                // NEW: Extract token safely, exactly like your colleague's code
+                let tokenRaw;
+                try {
+                    const parsedData = JSON.parse(rawText);
+                    tokenRaw = typeof parsedData === 'string' ? parsedData : parsedData.token;
+                } catch (e) {
+                    tokenRaw = rawText.replace(/^"|"$/g, "").trim();
+                }
+
+                if (!tokenRaw) throw new Error("Could not parse token. Backend returned: " + rawText.substring(0, 50));
 
                 showMessage('Secure session generated. Please enter card.', 'info');
                 
@@ -199,25 +219,22 @@
             showMessage('Authenticating 3DS...', 'info');
 
             try {
-                // Step 1: Complete the Cybersource 3DS flow
                 const completeResult = await up.complete(transientToken);
                 
-                // If it successfully authenticated, proceed to hit the custom BAE backend API
                 if (completeResult.status === "COMPLETED" || completeResult.status === "AUTHORIZED") {
                     
                     showMessage('Processing live charge...', 'info');
                     
-                    // Step 2: The Missing Step - Send to our backend to hit BAE's HostedCheckout
                     const finalChargeResponse = await fetch('/process-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ transientToken: completeResult })
                     });
 
-                    const chargeResult = await finalChargeResponse.json();
+                    const chargeResultRaw = await finalChargeResponse.text();
 
-                    if (chargeResult.error) {
-                        throw new Error(chargeResult.error);
+                    if (!finalChargeResponse.ok) {
+                        throw new Error(`Charge Failed: ${chargeResultRaw}`);
                     }
 
                     showMessage('Payment successful! Order confirmed.', 'success');
