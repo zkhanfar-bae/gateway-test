@@ -6,8 +6,6 @@
     <title>TechStore | Checkout</title>
     <link rel="icon" href="data:,">
     
-    <script src="https://flex.cybersource.com/cybersource-unified-checkout.min.js"></script>
-    
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
@@ -189,14 +187,33 @@
 
                 if (!tokenRaw) throw new Error("Could not parse token.");
 
+                showMessage('Downloading exact SDK from bank...', 'info');
+                
+                // THE FIX: Dynamically load the correct SDK from the JWT
+                const payloadBase64 = tokenRaw.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                const sdkUrl = decodedPayload.ctx[0].data.clientLibrary;
+
+                await new Promise((resolve, reject) => {
+                    // Remove old script if it exists
+                    const existing = document.querySelector(`script[data-cybersource-sdk="true"]`);
+                    if (existing) existing.remove();
+                    delete window.Accept;
+
+                    const script = document.createElement("script");
+                    script.src = sdkUrl;
+                    script.async = true;
+                    script.setAttribute("data-cybersource-sdk", "true");
+                    script.onload = () => setTimeout(resolve, 200);
+                    script.onerror = () => reject(new Error("Failed to load bank SDK"));
+                    document.body.appendChild(script);
+                });
+
                 showMessage('Rendering secure fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
 
-                // Because your supervisor gave you the exact script in the <head>,
-                // we no longer have to dynamically decode/download it here!
-                // We just call Accept immediately.
                 const accept = await Accept(tokenRaw);
                 up = await accept.unifiedPayments();
 
