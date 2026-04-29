@@ -28,6 +28,10 @@
         .cart-item:last-child { border-bottom: none; }
         .cart-total { font-size: 1.2rem; font-weight: bold; margin: 20px 0; display: flex; justify-content: space-between; border-top: 2px solid #eee; padding-top: 15px;}
         
+        .env-toggle { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px;}
+        .env-toggle label { font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase;}
+        .env-toggle select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold;}
+        
         #payment-container { display: none; margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;}
         #payment-form { min-height: 50px; margin-bottom: 15px; }
         .message { margin-top: 15px; font-weight: 500; font-size: 14px; text-align: center; padding: 10px; border-radius: 6px;}
@@ -41,7 +45,7 @@
     <div class="container">
         <div class="header">
             <h2>Welcome to TechStore Demo</h2>
-            <p>Testing Baelab Unified Checkout <span style="color: #16a34a; font-weight: bold; font-size: 12px; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">LIVE</span></p>
+            <p>Environment Testing Tool <span style="color: #0284c7; font-weight: bold; font-size: 12px; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">DUAL MODE</span></p>
         </div>
 
         <div class="products" id="product-list">
@@ -55,11 +59,6 @@
                 <div class="price">0.15 JOD</div>
                 <button type="button" class="btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
             </div>
-            <div class="product-card">
-                <h3>Enterprise Support</h3>
-                <div class="price">0.20 JOD</div>
-                <button type="button" class="btn add-to-cart-btn" data-id="3" data-name="Enterprise Support" data-price="0.20">Add to Cart</button>
-            </div>
         </div>
 
         <div class="cart-section">
@@ -71,6 +70,14 @@
             <div class="cart-total">
                 <span>Total:</span>
                 <span id="cart-total-price">0.00 JOD</span>
+            </div>
+
+            <div class="env-toggle">
+                <label for="env-selector">Select Environment</label>
+                <select id="env-selector">
+                    <option value="dev">Baelab (Sandbox / DEV)</option>
+                    <option value="prod">Bank al Etihad (LIVE PROD)</option>
+                </select>
             </div>
 
             <button type="button" id="checkout-btn" class="btn" style="background: #2563eb;" disabled>Proceed to Checkout</button>
@@ -94,6 +101,7 @@
         const paymentContainer = document.getElementById('payment-container');
         const messageDiv = document.getElementById('message');
         const payBtn = document.getElementById('pay-btn');
+        const envSelector = document.getElementById('env-selector'); // Grab the select dropdown
 
         document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -152,17 +160,20 @@
             isCheckingOut = true; 
             checkoutBtn.disabled = true;
             const finalAmount = getCartTotal(); 
+            const selectedEnv = envSelector.value; // Read what environment the user chose
             
-            showMessage('Locking cart & contacting live proxy...', 'info');
+            showMessage(`Connecting to ${selectedEnv.toUpperCase()} server...`, 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
 
             try {
+                // Pass the environment flag to your backend
                 const response = await fetch('/capture-context', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         amount: finalAmount,
-                        origin: window.location.origin
+                        origin: window.location.origin,
+                        env: selectedEnv 
                     })
                 });
                 
@@ -189,13 +200,11 @@
 
                 showMessage('Downloading exact SDK from bank...', 'info');
                 
-                // THE FIX: Dynamically load the correct SDK from the JWT
                 const payloadBase64 = tokenRaw.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
                 const sdkUrl = decodedPayload.ctx[0].data.clientLibrary;
 
                 await new Promise((resolve, reject) => {
-                    // Remove old script if it exists
                     const existing = document.querySelector(`script[data-cybersource-sdk="true"]`);
                     if (existing) existing.remove();
                     delete window.Accept;
@@ -237,6 +246,7 @@
         async function processPayment() {
             payBtn.disabled = true;
             showMessage('Authenticating 3DS...', 'info');
+            const selectedEnv = envSelector.value;
 
             try {
                 const completeResult = await up.complete(transientToken);
@@ -253,13 +263,17 @@
 
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
                     
-                    showMessage('Processing live charge...', 'info');
+                    showMessage(`Processing final charge (${selectedEnv.toUpperCase()})...`, 'info');
                     
                     if (paymentStatus !== "AUTHORIZED") {
+                        // Send the environment flag here as well
                         const finalChargeResponse = await fetch('/process-payment', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ transientToken: completeResult })
+                            body: JSON.stringify({ 
+                                transientToken: completeResult,
+                                env: selectedEnv 
+                            })
                         });
 
                         const chargeResultRaw = await finalChargeResponse.text();
