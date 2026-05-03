@@ -171,19 +171,22 @@
             checkoutBtn.disabled = true;
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
+            const isSubscription = saveCardCheckbox.checked; // Reading checkbox right away!
             
             showMessage(`Connecting to ${selectedEnv.toUpperCase()} server...`, 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
 
             try {
+                // Sending the isSubscription flag to the Capture Context route
                 const response = await fetch('/capture-context', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         amount: finalAmount,
                         origin: window.location.origin,
-                        env: selectedEnv 
+                        env: selectedEnv,
+                        isSubscription: isSubscription
                     })
                 });
                 
@@ -276,13 +279,12 @@
                             body: JSON.stringify({ 
                                 transientToken: completeResult,
                                 env: selectedEnv,
-                                isSubscription: isSubscription // Pass the checkbox status to backend
+                                isSubscription: isSubscription
                             })
                         });
 
                         const chargeResultRaw = await finalChargeResponse.text();
 
-                        // 🔥 THIS IS THE MAGIC CONSOLE LOG 🔥
                         console.log("====================================");
                         console.log("BANK RESPONSE (Check for Tokens!):");
                         console.log(chargeResultRaw);
