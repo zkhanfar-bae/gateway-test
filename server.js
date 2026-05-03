@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// ROUTE 1: Generate the Capture Context
+// ROUTE 1: Generate the Capture Context (NOW WITH TOKENIZE COMMANDS)
 app.post('/capture-context', async (req, res) => {
     try {
         const env = req.body.env || 'prod'; 
@@ -25,6 +25,21 @@ app.post('/capture-context', async (req, res) => {
             token = process.env.MY_TOKEN; 
         }
 
+        // Base Cybersource payload
+        const capturePayload = {
+            targetOrigins: [targetOrigin],
+            allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"],
+            totalAmount: amountToCharge,
+            currency: 'JOD'
+        };
+
+        // THE MAGIC TRICK: Injecting the vault commands into the initial context
+        if (req.body.isSubscription) {
+            console.log(`[${env.toUpperCase()}] Injecting Cybersource Tokenize commands into Capture Context...`);
+            capturePayload.actionList = ["TOKEN_CREATE"];
+            capturePayload.actionTokenTypes = ["customer", "paymentInstrument"];
+        }
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -35,12 +50,7 @@ app.post('/capture-context', async (req, res) => {
                 'Referer': targetOrigin + '/',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             },
-            body: JSON.stringify({
-                targetOrigins: [targetOrigin],
-                allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"],
-                totalAmount: amountToCharge,
-                currency: 'JOD'
-            })
+            body: JSON.stringify(capturePayload)
         });
 
         const rawText = await response.text();
@@ -56,24 +66,20 @@ app.post('/capture-context', async (req, res) => {
     }
 });
 
-// ROUTE 2: Process the Final Payment & CREATE TOKEN
+// ROUTE 2: Process the Final Payment
 app.post('/process-payment', async (req, res) => {
     try {
         const env = req.body.env || 'prod';
         const token = env === 'dev' ? 'MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==' : process.env.MY_TOKEN;
         
-        // Base payload for a standard charge
         const payload = {
             token: req.body.transientToken,
             companyId: "6361F8DC-BCAE-4D4A-B903-7B8121A47922"
         };
 
-        // If the user checked the Subscription box, tell Cybersource to vault the card!
+        // We leave this here just in case BAE's API also expects it on the final charge
         if (req.body.isSubscription) {
-            console.log("Subscription requested! Asking Cybersource to create TMS Token...");
-            // Cybersource standard command to create a token during a charge
             payload.actionList = ["TOKEN_CREATE"];
-            // Just in case Bank al Etihad's wrapper uses a custom flag instead:
             payload.saveCard = true; 
         }
 
