@@ -12,10 +12,10 @@ app.use(express.static(path.join(__dirname)));
 
 // Helper function to build Cybersource Configuration
 function getCyberConfig(envReq) {
-    // Default to sandbox unless 'prod' is explicitly requested via environment variable or frontend
+    // FIX: The SDK now requires direct hostnames instead of the old "cybersource.environment.X" strings
     const runEnv = (process.env.CYBER_ENV === 'production' || envReq === 'prod') 
-        ? 'cybersource.environment.production' 
-        : 'cybersource.environment.sandbox';
+        ? 'api.cybersource.com' 
+        : 'apitest.cybersource.com';
 
     return {
         authenticationType: 'http_signature',
@@ -43,7 +43,6 @@ app.post('/capture-context', (req, res) => {
         // Inject Tokenization/Vault commands for subscriptions
         if (req.body.isSubscription) {
             console.log("Injecting Tokenize commands into Capture Context...");
-            // The SDK handles dynamic properties via standard JS assignment
             requestObj.actionList = ["TOKEN_CREATE"];
             requestObj.actionTokenTypes = ["customer", "paymentInstrument"];
         }
@@ -55,7 +54,6 @@ app.post('/capture-context', (req, res) => {
                 console.error('Error generating capture context:', error);
                 return res.status(500).json({ error: error.message || "Failed to generate context" });
             }
-            // Cybersource returns the JWT as a string directly
             res.send(data);
         });
     } catch (error) {
@@ -107,7 +105,6 @@ app.post('/process-payment', (req, res) => {
                 console.error('Error processing payment:', error);
                 return res.status(500).json({ error: error.message || "Payment declined or failed" });
             }
-            // Send back the direct Cybersource response payload
             res.json(data);
         });
     } catch (error) {
