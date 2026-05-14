@@ -38,10 +38,16 @@ app.post('/capture-context', (req, res) => {
         requestObj.clientVersion = "v2";
         requestObj.targetOrigins = [targetOrigin];
         
-        // Allowed Payment Types and Networks
         requestObj.allowedPaymentTypes = ["CARD"]; 
-        // FIX: Added the mandatory card networks array
         requestObj.allowedCardNetworks = ["VISA", "MASTERCARD"]; 
+        
+        // FIX: We MUST include the amount here so Cybersource returns the Unified Checkout SDK (which contains `Accept`)
+        requestObj.orderInformation = {
+            amountDetails: {
+                totalAmount: req.body.amount || "0.10",
+                currency: "JOD"
+            }
+        };
         
         // Inject Tokenization/Vault commands for subscriptions
         if (req.body.isSubscription) {
