@@ -35,11 +35,10 @@ app.post('/capture-context', (req, res) => {
 
         // Build the capture context request
         const requestObj = {
-            // FIX: Unified Checkout strictly requires this, but it expects a semantic version number (like "1.1"), NOT "v2"
-            clientVersion: "1.1", 
+            clientVersion: "0.34", // CRITICAL FIX: Use the officially supported 0.34 semantic version
+            country: "JO", // CRITICAL FIX: Cybersource mandates a top-level country code
             targetOrigins: [targetOrigin],
             allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"], 
-            // Re-added the mandatory card networks array
             allowedCardNetworks: ["VISA", "MASTERCARD"],
             orderInformation: {
                 amountDetails: {
