@@ -33,19 +33,17 @@ app.post('/capture-context', (req, res) => {
         const configObject = getCyberConfig(req.body.env);
         const apiClient = new cybersourceRestApi.ApiClient();
 
-        // Build the capture context request
-        const requestObj = new cybersourceRestApi.GenerateCaptureContextRequest();
-        requestObj.clientVersion = "v2";
-        requestObj.targetOrigins = [targetOrigin];
-        
-        requestObj.allowedPaymentTypes = ["CARD"]; 
-        requestObj.allowedCardNetworks = ["VISA", "MASTERCARD"]; 
-        
-        // FIX: We MUST include the amount here so Cybersource returns the Unified Checkout SDK (which contains `Accept`)
-        requestObj.orderInformation = {
-            amountDetails: {
-                totalAmount: req.body.amount || "0.10",
-                currency: "JOD"
+        // Build the capture context request using a raw object to ensure Unified Checkout compatibility
+        const requestObj = {
+            clientVersion: "v2",
+            targetOrigins: [targetOrigin],
+            // CRITICAL FIX: Unified Checkout strictly uses PANENTRY, not CARD
+            allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"], 
+            orderInformation: {
+                amountDetails: {
+                    totalAmount: req.body.amount || "0.10",
+                    currency: "JOD"
+                }
             }
         };
         
@@ -56,9 +54,10 @@ app.post('/capture-context', (req, res) => {
             requestObj.actionTokenTypes = ["customer", "paymentInstrument"];
         }
 
-        const instance = new cybersourceRestApi.MicroformIntegrationApi(configObject, apiClient);
+        // CRITICAL FIX: Switch API class from Microform to Unified Checkout
+        const instance = new cybersourceRestApi.UnifiedCheckoutCaptureContextApi(configObject, apiClient);
         
-        instance.generateCaptureContext(requestObj, function (error, data, response) {
+        instance.generateUnifiedCheckoutCaptureContext(requestObj, function (error, data, response) {
             if (error) {
                 let errorDetails = error.message || "Failed to generate context";
                 if (response && response.text) {
