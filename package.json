@@ -1,7 +1,7 @@
 {
   "name": "gateway-test",
   "version": "1.0.0",
-  "description": "Subscription test",
+  "description": "Subscription test direct Cybersource",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -9,7 +9,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "nedb": "^1.8.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "cybersource-rest-client": "^0.0.51"
   }
 }
