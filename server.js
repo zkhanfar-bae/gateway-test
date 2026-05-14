@@ -33,11 +33,10 @@ app.post('/capture-context', (req, res) => {
         const configObject = getCyberConfig(req.body.env);
         const apiClient = new cybersourceRestApi.ApiClient();
 
-        // Build the capture context request using a raw object to ensure Unified Checkout compatibility
+        // Build the capture context request
         const requestObj = {
-            clientVersion: "v2",
+            // CRITICAL FIX: Removed clientVersion entirely. Unified Checkout automatically defaults to the latest version.
             targetOrigins: [targetOrigin],
-            // CRITICAL FIX: Unified Checkout strictly uses PANENTRY, not CARD
             allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"], 
             orderInformation: {
                 amountDetails: {
@@ -54,7 +53,6 @@ app.post('/capture-context', (req, res) => {
             requestObj.actionTokenTypes = ["customer", "paymentInstrument"];
         }
 
-        // CRITICAL FIX: Switch API class from Microform to Unified Checkout
         const instance = new cybersourceRestApi.UnifiedCheckoutCaptureContextApi(configObject, apiClient);
         
         instance.generateUnifiedCheckoutCaptureContext(requestObj, function (error, data, response) {
