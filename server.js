@@ -38,8 +38,10 @@ app.post('/capture-context', (req, res) => {
         requestObj.clientVersion = "v2";
         requestObj.targetOrigins = [targetOrigin];
         
-        // FIX: Changed to match your Merchant ID's supported types
+        // Allowed Payment Types and Networks
         requestObj.allowedPaymentTypes = ["CARD"]; 
+        // FIX: Added the mandatory card networks array
+        requestObj.allowedCardNetworks = ["VISA", "MASTERCARD"]; 
         
         // Inject Tokenization/Vault commands for subscriptions
         if (req.body.isSubscription) {
@@ -52,7 +54,6 @@ app.post('/capture-context', (req, res) => {
         
         instance.generateCaptureContext(requestObj, function (error, data, response) {
             if (error) {
-                // Enhanced error logging to capture exact bank rejections
                 let errorDetails = error.message || "Failed to generate context";
                 if (response && response.text) {
                     errorDetails = `${errorDetails} - ${response.text}`;
@@ -108,7 +109,6 @@ app.post('/process-payment', (req, res) => {
 
         instance.createPayment(requestObj, function (error, data, response) {
             if (error) {
-                // Enhanced error logging to capture exact bank rejections
                 let errorDetails = error.message || "Payment declined or failed";
                 if (response && response.text) {
                     errorDetails = `${errorDetails} - ${response.text}`;
