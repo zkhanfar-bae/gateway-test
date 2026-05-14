@@ -49,7 +49,7 @@
     <div class="container">
         <div class="header">
             <h2>Welcome to TechStore Demo</h2>
-            <p>Environment Testing Tool <span style="color: #0284c7; font-weight: bold; font-size: 12px; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">DUAL MODE</span></p>
+            <p>Environment Testing Tool <span style="color: #0284c7; font-weight: bold; font-size: 12px; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">DIRECT INTEGRATION MODE</span></p>
         </div>
 
         <div class="products" id="product-list">
@@ -79,8 +79,8 @@
             <div class="env-toggle">
                 <label for="env-selector">Select Environment</label>
                 <select id="env-selector">
-                    <option value="dev">Baelab (Sandbox / DEV)</option>
-                    <option value="prod">Bank al Etihad (LIVE PROD)</option>
+                    <option value="prod">Cybersource (LIVE PROD)</option>
+                    <option value="dev">Cybersource (Sandbox / DEV)</option>
                 </select>
             </div>
 
@@ -171,14 +171,13 @@
             checkoutBtn.disabled = true;
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
-            const isSubscription = saveCardCheckbox.checked; // Reading checkbox right away!
+            const isSubscription = saveCardCheckbox.checked; 
             
-            showMessage(`Connecting to ${selectedEnv.toUpperCase()} server...`, 'info');
+            showMessage(`Connecting to server...`, 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
 
             try {
-                // Sending the isSubscription flag to the Capture Context route
                 const response = await fetch('/capture-context', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -273,42 +272,12 @@
                     showMessage(`Processing charge & Vaulting Card...`, 'info');
                     
                     if (paymentStatus !== "AUTHORIZED") {
+                        const finalAmount = getCartTotal(); // Grab the amount for the direct backend call
+
                         const finalChargeResponse = await fetch('/process-payment', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
                                 transientToken: completeResult,
                                 env: selectedEnv,
-                                isSubscription: isSubscription
-                            })
-                        });
-
-                        const chargeResultRaw = await finalChargeResponse.text();
-
-                        console.log("====================================");
-                        console.log("BANK RESPONSE (Check for Tokens!):");
-                        console.log(chargeResultRaw);
-                        console.log("====================================");
-
-                        if (!finalChargeResponse.ok) {
-                            throw new Error(`Charge Failed: ${chargeResultRaw}`);
-                        }
-                    }
-
-                    showMessage('Payment successful! Check the console for your Vault Token.', 'success');
-                    paymentContainer.style.display = 'none';
-                    
-                } else if (paymentStatus === "DECLINED") {
-                    showMessage('Payment failed. Card declined.', 'error');
-                    payBtn.disabled = false;
-                } else {
-                    throw new Error(`Payment failed. Bank returned status: ${paymentStatus || 'Unknown'}`);
-                }
-            } catch (error) {
-                showMessage(error.message || 'Payment failed.', 'error');
-                payBtn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+                                isSubscription: isSubscription,
