@@ -35,9 +35,12 @@ app.post('/capture-context', (req, res) => {
 
         // Build the capture context request
         const requestObj = {
-            // CRITICAL FIX: Removed clientVersion entirely. Unified Checkout automatically defaults to the latest version.
+            // FIX: Unified Checkout strictly requires this, but it expects a semantic version number (like "1.1"), NOT "v2"
+            clientVersion: "1.1", 
             targetOrigins: [targetOrigin],
             allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"], 
+            // Re-added the mandatory card networks array
+            allowedCardNetworks: ["VISA", "MASTERCARD"],
             orderInformation: {
                 amountDetails: {
                     totalAmount: req.body.amount || "0.10",
