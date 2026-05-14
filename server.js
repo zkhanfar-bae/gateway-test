@@ -37,7 +37,9 @@ app.post('/capture-context', (req, res) => {
         const requestObj = new cybersourceRestApi.GenerateCaptureContextRequest();
         requestObj.clientVersion = "v2";
         requestObj.targetOrigins = [targetOrigin];
-        requestObj.allowedPaymentTypes = ["PANENTRY", "GOOGLEPAY", "APPLEPAY"];
+        
+        // FIX: Changed to match your Merchant ID's supported types
+        requestObj.allowedPaymentTypes = ["CARD"]; 
         
         // Inject Tokenization/Vault commands for subscriptions
         if (req.body.isSubscription) {
