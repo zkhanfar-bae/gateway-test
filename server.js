@@ -21,7 +21,7 @@ function getCyberConfig(envReq) {
         runEnvironment: runEnv,
         merchantID: process.env.CYBERSOURCE_MERCHANT_ID,
         merchantKeyId: process.env.CYBERSOURCE_KEY_ID,
-        merchantsecretKey: process.env.CYBERSOURCE_SECRET_KEY, // The SDK strictly requires lowercase 's' here
+        merchantsecretKey: process.env.CYBERSOURCE_SECRET_KEY, 
         logConfiguration: { enableLog: false }
     };
 }
@@ -90,3 +90,38 @@ app.post('/process-payment', (req, res) => {
         requestObj.processingInformation = processingInformation;
 
         // 3. Payment Information (Inject the transient token from the frontend)
+        const paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
+        const tokenInfo = new cybersourceRestApi.Ptsv2paymentsPaymentInformationTokenInformation();
+        tokenInfo.transientTokenJwt = req.body.transientToken;
+        paymentInformation.tokenInformation = tokenInfo;
+        requestObj.paymentInformation = paymentInformation;
+
+        // 4. Order Information (Amount and Currency)
+        const orderInformation = new cybersourceRestApi.Ptsv2paymentsOrderInformation();
+        const amountDetails = new cybersourceRestApi.Ptsv2paymentsOrderInformationAmountDetails();
+        amountDetails.totalAmount = req.body.amount || "0.10"; 
+        amountDetails.currency = "JOD";
+        orderInformation.amountDetails = amountDetails;
+        requestObj.orderInformation = orderInformation;
+
+        instance.createPayment(requestObj, function (error, data, response) {
+            if (error) {
+                // Enhanced error logging to capture exact bank rejections
+                let errorDetails = error.message || "Payment declined or failed";
+                if (response && response.text) {
+                    errorDetails = `${errorDetails} - ${response.text}`;
+                }
+                console.error('Error processing payment:', errorDetails);
+                return res.status(500).json({ error: errorDetails });
+            }
+            res.json(data);
+        });
+    } catch (error) {
+        console.error('Payment Execution Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Direct Cybersource Gateway running on port ${port}`);
+});
