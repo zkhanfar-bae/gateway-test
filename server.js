@@ -35,11 +35,12 @@ app.post('/capture-context', (req, res) => {
 
         // Build the capture context request
         const requestObj = {
-            clientVersion: "0.34", // CRITICAL FIX: Use the officially supported 0.34 semantic version
-            country: "JO", // CRITICAL FIX: Cybersource mandates a top-level country code
+            clientVersion: "1.1", 
             targetOrigins: [targetOrigin],
             allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"], 
             allowedCardNetworks: ["VISA", "MASTERCARD"],
+            // FIX: Added the mandatory locale field so Cybersource knows what language to render
+            locale: "en-US", 
             orderInformation: {
                 amountDetails: {
                     totalAmount: req.body.amount || "0.10",
