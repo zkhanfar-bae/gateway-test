@@ -12,7 +12,6 @@ app.use(express.static(path.join(__dirname)));
 
 // Helper function to build Cybersource Configuration
 function getCyberConfig(envReq) {
-    // FIX: The SDK now requires direct hostnames instead of the old "cybersource.environment.X" strings
     const runEnv = (process.env.CYBER_ENV === 'production' || envReq === 'prod') 
         ? 'api.cybersource.com' 
         : 'apitest.cybersource.com';
@@ -22,7 +21,8 @@ function getCyberConfig(envReq) {
         runEnvironment: runEnv,
         merchantID: process.env.CYBERSOURCE_MERCHANT_ID,
         merchantKeyId: process.env.CYBERSOURCE_KEY_ID,
-        merchantsecretKey: process.env.CYBERSOURCE_SECRET_KEY,
+        // FIX: The SDK strictly requires camelCase with a capital 'S' here
+        merchantSecretKey: process.env.CYBERSOURCE_SECRET_KEY, 
         logConfiguration: { enableLog: false }
     };
 }
@@ -51,8 +51,13 @@ app.post('/capture-context', (req, res) => {
         
         instance.generateCaptureContext(requestObj, function (error, data, response) {
             if (error) {
-                console.error('Error generating capture context:', error);
-                return res.status(500).json({ error: error.message || "Failed to generate context" });
+                // Enhanced error logging to capture exact bank rejections
+                let errorDetails = error.message || "Failed to generate context";
+                if (response && response.text) {
+                    errorDetails = `${errorDetails} - ${response.text}`;
+                }
+                console.error('Error generating capture context:', errorDetails);
+                return res.status(500).json({ error: errorDetails });
             }
             res.send(data);
         });
@@ -102,8 +107,13 @@ app.post('/process-payment', (req, res) => {
 
         instance.createPayment(requestObj, function (error, data, response) {
             if (error) {
-                console.error('Error processing payment:', error);
-                return res.status(500).json({ error: error.message || "Payment declined or failed" });
+                // Enhanced error logging to capture exact bank rejections
+                let errorDetails = error.message || "Payment declined or failed";
+                if (response && response.text) {
+                    errorDetails = `${errorDetails} - ${response.text}`;
+                }
+                console.error('Error processing payment:', errorDetails);
+                return res.status(500).json({ error: errorDetails });
             }
             res.json(data);
         });
