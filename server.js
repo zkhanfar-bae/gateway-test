@@ -5,6 +5,15 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// --- NEW: GLOBAL SPY LOGGER ---
+// This catches and prints absolutely every request before anything else can intercept it
+app.use((req, res, next) => {
+    if (req.url.includes('/api/webhook')) {
+        console.log(`🚨 [NETWORK EVENT] Cybersource sent a ${req.method} request to: ${req.url}`);
+    }
+    next();
+});
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
@@ -14,14 +23,13 @@ app.post('/capture-context', async (req, res) => {
     try {
         const isDev = req.body.env === "dev";
         
-        // Match exact endpoint destinations used by your colleague
         const CAPTURE_URL = isDev
             ? "https://merchant-order-token.baelab.net/v1/payments/capture-context"
             : "https://merchant-order-token.bankaletihad.com/v1/payments/app2/capture-context";
 
         const AUTH_TOKEN_CAPTURE = isDev
             ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
-            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 櫨 YOUR NEW PROD KEY 櫨
+            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // BAE PROD KEY
 
         const targetOrigin = req.body.origin || "http://localhost:3000";
 
@@ -60,7 +68,7 @@ app.post('/process-payment', async (req, res) => {
 
         const AUTH_TOKEN_PROCESS = isDev
             ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
-            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 櫨 YOUR NEW PROD KEY 櫨
+            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // BAE PROD KEY
 
         const COMPANY_ID = isDev
             ? "A4B4A51F-0E6A-41BE-A8FB-5FCCA54C2F58" // BAE DEV COMPANY ID
@@ -89,15 +97,14 @@ app.post('/process-payment', async (req, res) => {
     }
 });
 
-// ROUTE 3: Webhook Listener for Cybersource Notifications
-app.post('/api/webhook', (req, res) => {
+// ROUTE 3: Webhook Listener (Changed from app.post to app.all)
+app.all('/api/webhook', (req, res) => {
     try {
-        console.log('--- NEW WEBHOOK RECEIVED FROM CYBERSOURCE ---');
-        // This will print the exact JSON payload from Cybersource into your Render logs
-        console.log(JSON.stringify(req.body, null, 2)); 
-        console.log('---------------------------------------------');
+        console.log('--- NEW WEBHOOK CAUGHT ---');
+        console.log(`Method used: ${req.method}`);
+        console.log('Body:', JSON.stringify(req.body, null, 2)); 
+        console.log('--------------------------');
 
-        // Cybersource strictly requires a 200 OK response, otherwise it thinks the delivery failed
         res.status(200).send('Webhook received successfully');
     } catch (error) {
         console.error('Webhook Handling Error:', error);
