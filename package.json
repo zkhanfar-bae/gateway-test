@@ -1,16 +1,28 @@
 {
-  "name": "gateway-test",
+  "name": "techstore-bae-gateway",
   "version": "1.0.0",
-  "description": "Subscription test direct Cybersource",
+  "description": "TechStore payment testing sandbox integrated with Bank Al Etihad Proxy Gateway",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
+  "keywords": [
+    "express",
+    "bank-al-etihad",
+    "cybersource",
+    "payment-gateway"
+  ],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "node-fetch": "^3.3.2",
-    "cybersource-rest-client": "^0.0.51",
-    "jwk-to-pem": "^2.0.5"
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
