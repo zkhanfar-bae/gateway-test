@@ -3,337 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Enterprise Gateway</title>
+    <title>TechStore | Enterprise Gateway Engine</title>
     <link rel="icon" href="data:,">
     
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1e38 50%, #090d16 100%);
-            --panel-bg: rgba(30, 41, 59, 0.45);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --glow-blue: #38bdf8;
-            --glow-purple: #c084fc;
-            --btn-gradient: linear-gradient(90deg, #2563eb, #7c3aed);
-            --btn-hover: linear-gradient(90deg, #1d4ed8, #6d28d9);
-            --success: #34d399;
-            --error: #f87171;
-            --info: #60a5fa;
+            --bg: #090d16;
+            --sidebar-bg: #111827;
+            --surface: #1e293b;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --cyan: #06b6d4;
+            --violet: #8b5cf6;
+            --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+            --success: #10b981;
+            --error: #ef4444;
         }
 
         * { 
             box-sizing: border-box; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body { 
-            background: var(--bg-gradient); 
-            margin: 0; 
-            padding: 60px 20px; 
-            color: var(--text-main); 
+            background: var(--bg); 
+            color: var(--text-primary); 
             min-height: 100vh;
             display: flex;
-            align-items: center;
+            overflow-x: hidden;
         }
 
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            display: grid; 
-            grid-template-columns: 1.7fr 1.3fr; 
-            gap: 40px; 
+        /* App Layout Architecture */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
             width: 100%;
+            min-height: 100vh;
         }
 
-        @media (max-width: 900px) { 
-            .container { grid-template-columns: 1fr; gap: 30px; }
-            body { padding: 30px 16px; }
-        }
-        
-        .header { 
-            grid-column: 1 / -1; 
-            background: var(--panel-bg); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 32px 40px; 
-            border-radius: 24px; 
-            border: 1px solid var(--panel-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        @media (max-width: 1024px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .sidebar { border-right: none !important; border-bottom: 1px solid var(--border); position: relative !important; height: auto !important; }
         }
 
-        .header h2 { 
-            margin: 0; 
-            font-size: 28px; 
-            font-weight: 800; 
-            letter-spacing: -1px;
-            background: linear-gradient(90deg, #fff, var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header p { margin: 6px 0 0 0; color: var(--text-muted); font-size: 14px; font-weight: 500; }
-        
-        .badge {
-            color: #fff; 
-            font-weight: 700; 
-            font-size: 11px; 
-            background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(124,58,237,0.2));
-            padding: 8px 16px; 
-            border-radius: 99px;
-            border: 1px solid rgba(255,255,255,0.15);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 0 20px rgba(56,189,248,0.15);
-        }
-
-        .products { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
-            gap: 24px; 
-            align-content: start;
-        }
-
-        .product-card { 
-            background: var(--panel-bg); 
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 40px 30px; 
-            border-radius: 24px; 
-            text-align: center; 
-            border: 1px solid var(--panel-border);
+        /* Control Sidebar Navigation */
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 40px 24px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            height: 100vh;
         }
 
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at top right, rgba(124,58,237,0.15), transparent 60%);
-            pointer-events: none;
+        .brand-zone {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
         }
 
-        .product-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(56,189,248,0.1);
-        }
-
-        .product-card h3 { margin: 0 0 12px 0; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
-        .price { 
-            background: linear-gradient(90deg, var(--glow-blue), var(--glow-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800; 
-            font-size: 1.85rem; 
-            margin-bottom: 30px; 
-            letter-spacing: -1px; 
-        }
-        
-        .btn { 
-            background: var(--btn-gradient); 
-            color: #fff; 
-            border: none; 
-            padding: 14px 24px; 
-            border-radius: 14px; 
-            cursor: pointer; 
-            width: 100%; 
-            font-weight: 700; 
-            font-size: 15px;
-            box-shadow: 0 4px 15px rgba(37,99,235,0.3);
-            letter-spacing: -0.2px;
-        }
-
-        .btn:hover { 
-            background: var(--btn-hover); 
-            box-shadow: 0 6px 20px rgba(124,58,237,0.4);
-            transform: scale(1.02);
-        }
-        .btn:disabled { 
-            background: #334155 !important; 
-            color: #64748b !important; 
-            cursor: not-allowed; 
-            box-shadow: none !important;
-            transform: none !important;
-        }
-        
-        .btn-remove { 
-            background: rgba(248,113,113,0.1); 
-            color: var(--error);
-            border: 1px solid rgba(248,113,113,0.2);
-            padding: 6px 14px; 
-            font-size: 12px; 
-            margin-top: 12px; 
-            width: auto;
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-primary);
             border-radius: 8px;
-            font-weight: 600;
-        }
-        .btn-remove:hover { background: rgba(248,113,113,0.2); border-color: var(--error); }
-        
-        .cart-section { 
-            background: var(--panel-bg); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 40px; 
-            border-radius: 24px; 
-            border: 1px solid var(--panel-border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            height: fit-content; 
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
         }
 
-        .cart-section h3 { margin-top: 0; margin-bottom: 24px; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+        .brand-zone h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
 
-        .cart-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 18px 0; 
-            border-bottom: 1px solid rgba(255,255,255,0.06); 
-        }
-        .cart-item:last-of-type { border-bottom: none; }
+        .control-group { margin-bottom: 24px; }
+        .control-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         
-        .cart-total { 
-            font-size: 1.4rem; 
-            font-weight: 800; 
-            margin: 30px 0; 
-            display: flex; 
-            justify-content: space-between; 
-            border-top: 1px dashed rgba(255,255,255,0.15); 
-            padding-top: 24px;
-            letter-spacing: -0.5px;
-        }
-        
-        .env-toggle { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;}
-        .env-toggle label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
-        .env-toggle select { 
-            padding: 14px; 
-            border-radius: 14px; 
-            border: 1px solid var(--panel-border); 
-            font-weight: 600;
-            font-size: 15px;
-            background: #1e293b;
+        .sidebar select {
+            width: 100%;
+            padding: 14px;
+            background: #1f2937;
+            border: 1px solid var(--border);
+            border-radius: 12px;
             color: #fff;
+            font-weight: 600;
+            font-size: 14px;
             outline: none;
             cursor: pointer;
             appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2'><polyline points='6 9 12 15 18 9'></polyline></svg>");
             background-repeat: no-repeat;
             background-position: right 14px center;
             background-size: 16px;
         }
-        .env-toggle select:focus { border-color: var(--glow-blue); box-shadow: 0 0 15px rgba(56,189,248,0.15); }
-        
-        .subscription-box { 
-            margin-bottom: 30px; 
-            padding: 16px; 
-            background: rgba(192,132,252,0.06); 
-            border: 1px solid rgba(192,132,252,0.15); 
-            border-radius: 14px; 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-        }
-        .subscription-box input { 
-            width: 20px; 
-            height: 20px; 
-            cursor: pointer; 
-            accent-color: var(--glow-purple);
-        }
-        .subscription-box label { font-size: 14px; font-weight: 600; color: #d8b4fe; cursor: pointer; user-select: none;}
-        
-        #payment-container { 
-            display: none; 
-            margin-top: 30px; 
-            background: rgba(15,23,42,0.6); 
-            padding: 24px; 
-            border-radius: 16px; 
-            border: 1px solid var(--panel-border);
-        }
-        #payment-form { min-height: 50px; margin-bottom: 24px; }
-        
-        /* Targets injected CyberSource iFrame components seamlessly */
-        #payment-form iframe { background: transparent !important; color-scheme: dark; }
+        .sidebar select:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(6, 182, 212, 0.15); }
 
-        .message { 
-            margin-top: 24px; 
-            font-weight: 600; 
-            font-size: 14px; 
-            text-align: center; 
-            padding: 16px; 
+        .config-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
             border-radius: 14px;
-            backdrop-filter: blur(8px);
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
         }
-        .success { background: rgba(52,211,153,0.1); color: var(--success); border: 1px solid rgba(52,211,153,0.25); box-shadow: 0 0 20px rgba(52,211,153,0.1); }
-        .error { background: rgba(248,113,113,0.1); color: var(--error); border: 1px solid rgba(248,113,113,0.25); box-shadow: 0 0 20px rgba(248,113,113,0.1); }
-        .info { background: rgba(96,165,250,0.1); color: var(--info); border: 1px solid rgba(96,165,250,0.25); }
+        .config-card input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--violet); cursor: pointer; margin-top: 2px;}
+        .config-card label { font-size: 13px; color: var(--text-secondary); font-weight: 500; cursor: pointer; line-height: 1.4; }
+
+        /* Main Operations Workspace */
+        .workspace {
+            padding: 40px 60px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 640px) { .workspace { padding: 24px 16px; } }
+
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+        }
+        .workspace-header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+
+        .status-pill {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Functional Modules Context Layout */
+        .module-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        @media (max-width: 1200px) { .module-grid { grid-template-columns: 1fr; } }
+
+        .panel-heading { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+
+        /* Inventory Stack Modules */
+        .catalog-stack { display: flex; flex-direction: column; gap: 16px; }
+        
+        .item-tile {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .item-tile::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: transparent;
+        }
+        .item-tile:hover {
+            transform: translateX(4px);
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .item-tile:hover::before { background: var(--cyan); }
+
+        .item-meta h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .item-meta p { color: var(--text-secondary); font-size: 13px; }
+
+        .item-action { text-align: right; }
+        .tile-price { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.5px; }
+
+        /* Dynamic Interaction Elements */
+        .action-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .item-tile .action-btn:hover { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
+
+        /* Processing Dashboard Sheet */
+        .billing-panel {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .receipt-row.total {
+            border-top: 1px dashed rgba(255,255,255,0.15);
+            border-bottom: none;
+            font-size: 22px;
+            font-weight: 800;
+            padding-top: 20px;
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        .btn-trash {
+            color: var(--error);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .btn-trash:hover { text-decoration: underline; }
+
+        /* Execution Master Control Button */
+        .master-trigger {
+            background: var(--gradient-primary);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            padding: 16px 24px;
+            font-weight: 700;
+            font-size: 15px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 24px;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.25);
+        }
+        .master-trigger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);
+        }
+        .master-trigger:disabled {
+            background: #334155;
+            color: #64748b;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Secure Token Injected Form Panel Wrapper */
+        #payment-container {
+            display: none;
+            margin-top: 24px;
+            background: rgba(9, 13, 22, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        #payment-form { min-height: 60px; margin-bottom: 20px; }
+
+        /* Status Output Log Panel */
+        .terminal-log {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-weight: 500;
+            display: none;
+            border-left: 4px solid transparent;
+        }
+        .terminal-log.info { background: rgba(6,182,212,0.06); color: var(--cyan); border-left-color: var(--cyan); }
+        .terminal-log.success { background: rgba(16,185,129,0.06); color: var(--success); border-left-color: var(--success); }
+        .terminal-log.error { background: rgba(239,68,68,0.06); color: var(--error); border-left-color: var(--error); }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
+    <div class="app-layout">
+        <div class="sidebar">
             <div>
-                <h2>TechStore Gateway Engine</h2>
-                <p>Enterprise Environment Node Management</p>
-            </div>
-            <span class="badge">Bank Al Etihad Proxy</span>
-        </div>
-
-        <div class="products" id="product-list">
-            <div class="product-card">
-                <h3>Basic API Key</h3>
-                <div class="price">0.10 JOD</div>
-                <button type="button" class="btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
-            </div>
-            <div class="product-card">
-                <h3>Pro Dashboard</h3>
-                <div class="price">0.15 JOD</div>
-                <button type="button" class="btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
-            </div>
-        </div>
-
-        <div class="cart-section">
-            <h3>Secure Allocation</h3>
-            <div id="cart-items">
-                <p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0; font-weight: 500;">No items queued in allocation module.</p>
-            </div>
-            
-            <div class="cart-total">
-                <span>Aggregated Total:</span>
-                <span id="cart-total-price">0.00 JOD</span>
+                <div class="brand-zone">
+                    <div class="brand-icon"></div>
+                    <h2>TechStore Core</h2>
+                </div>
+                
+                <div class="control-group">
+                    <label for="env-selector">Network Topology Target</label>
+                    <select id="env-selector">
+                        <option value="prod">BAE / CyberSource (LIVE PROD)</option>
+                        <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="env-toggle">
-                <label for="env-selector">Target Network Layer</label>
-                <select id="env-selector">
-                    <option value="prod">BAE / CyberSource (LIVE PROD)</option>
-                    <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
-                </select>
-            </div>
-
-            <div class="subscription-box">
+            <div class="config-card">
                 <input type="checkbox" id="save-card-cb">
-                <label for="save-card-cb">Authorize token recurring intervals</label>
+                <label for="save-card-cb">Vault context mapping parameters for future recurring allocation loops.</label>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div class="workspace-header">
+                <div>
+                    <h1>Payment Node Provisioning</h1>
+                </div>
+                <div class="status-pill">PROXY MONITOR UP</div>
             </div>
 
-            <button type="button" id="checkout-btn" class="btn" disabled>Initialize Gateway Handshake</button>
-            <div id="message" class="message" style="display: none;"></div>
+            <div class="module-grid">
+                <div>
+                    <h2 class="panel-heading">Hardware Asset Allocation</h2>
+                    <div class="catalog-stack" id="product-list">
+                        <div class="item-tile">
+                            <div class="item-meta">
+                                <h3>Basic API Key</h3>
+                                <p>Standard development pipeline sandbox</p>
+                            </div>
+                            <div class="item-action">
+                                <div class="tile-price">0.10 JOD</div>
+                                <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Queue Asset</button>
+                            </div>
+                        </div>
 
-            <div id="payment-container">
-                <p style="font-size: 11px; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Secure Hosted Vault Fields</p>
-                <div id="payment-form"></div>
-                <button type="button" id="pay-btn" class="btn" style="background: var(--btn-gradient);">Execute Settlement</button>
+                        <div class="item-tile">
+                            <div class="item-meta">
+                                <h3>Pro Dashboard</h3>
+                                <p>Enterprise visualization suite execution matrix</p>
+                            </div>
+                            <div class="item-action">
+                                <div class="tile-price">0.15 JOD</div>
+                                <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Queue Asset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="panel-heading">Settlement Manifest</h2>
+                    <div class="billing-panel">
+                        <div id="cart-items">
+                            <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Manifest configuration empty.</p>
+                        </div>
+
+                        <div class="receipt-row total">
+                            <span>Aggregated Total</span>
+                            <span id="cart-total-price">0.00 JOD</span>
+                        </div>
+
+                        <button type="button" id="checkout-btn" class="master-trigger" disabled>Execute Token Handshake</button>
+                        <div id="message" class="terminal-log"></div>
+
+                        <div id="payment-container">
+                            <h2 class="panel-heading" style="font-size:11px; margin-bottom:16px;">Injected Secure Fields</h2>
+                            <div id="payment-form"></div>
+                            <button type="button" id="pay-btn" class="master-trigger" style="margin-top:0;">Finalize Asset Liquidation</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -376,19 +413,17 @@
         function renderCart() {
             cartItemsDiv.innerHTML = '';
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0; font-weight: 500;">No items queued in allocation module.</p>';
+                cartItemsDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Manifest configuration empty.</p>';
                 checkoutBtn.disabled = true;
             } else {
                 cart.forEach((item, index) => {
                     cartItemsDiv.innerHTML += `
-                        <div class="cart-item">
+                        <div class="receipt-row">
                             <div>
-                                <span style="font-size: 15px; font-weight: 600; display: block; color: var(--text-main);">${item.name}</span>
-                                <button class="btn btn-remove" onclick="window.removeFromCart(${index})">Remove</button>
+                                <span style="font-weight:600; display:block;">${item.name}</span>
+                                <button type="button" class="btn-trash" onclick="window.removeFromCart(${index})">Drop Asset</button>
                             </div>
-                            <div style="text-align: right;">
-                                <span style="font-size: 16px; font-weight: 700; color: #fff;">${item.price.toFixed(2)} JOD</span>
-                            </div>
+                            <span style="font-weight:700; color:#fff;">${item.price.toFixed(2)} JOD</span>
                         </div>
                     `;
                 });
@@ -399,8 +434,8 @@
 
         function showMessage(text, type) {
             messageDiv.style.display = 'block';
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = `[system_log] >> ${text}`;
+            messageDiv.className = `terminal-log ${type}`;
         }
 
         let up; 
@@ -412,8 +447,8 @@
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
             
-            showMessage(`Connecting to Proxy Server (${selectedEnv.toUpperCase()})...`, 'info');
-            document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
+            showMessage(`Handshaking node endpoints via proxy (${selectedEnv.toUpperCase()})...`, 'info');
+            document.querySelectorAll('.add-to-cart-btn, .btn-trash').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
             envSelector.disabled = true;
 
@@ -439,9 +474,9 @@
                     tokenRaw = rawText.replace(/^"|"$/g, "").trim();
                 }
 
-                if (!tokenRaw) throw new Error("Could not parse bank secure token.");
+                if (!tokenRaw) throw new Error("Signature verification failed.");
 
-                showMessage('Token received. Downloading Safe SDK...', 'info');
+                showMessage('Handshake verified. Fetching encrypted vault module script dynamically...', 'info');
                 
                 const payloadBase64 = tokenRaw.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
@@ -464,11 +499,11 @@
                         script.crossOrigin = "anonymous";
                     }
                     script.onload = () => setTimeout(resolve, 200);
-                    script.onerror = () => reject(new Error("Failed to load secure bank SDK"));
+                    script.onerror = () => reject(new Error("Failed to load platform core component libraries."));
                     document.body.appendChild(script);
                 });
 
-                showMessage('Rendering payment sheet fields...', 'info');
+                showMessage('Decrypting structural payment components...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
@@ -486,10 +521,10 @@
                 payBtn.onclick = processPayment;
 
             } catch (error) {
-                showMessage(`Setup failed: ${error.message}`, 'error');
+                showMessage(`Topology setup aborted: ${error.message}`, 'error');
                 checkoutBtn.disabled = false;
                 isCheckingOut = false;
-                document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = false);
+                document.querySelectorAll('.add-to-cart-btn, .btn-trash').forEach(b => b.disabled = false);
                 saveCardCheckbox.disabled = false;
                 envSelector.disabled = false;
             }
@@ -497,7 +532,7 @@
 
         async function processPayment() {
             payBtn.disabled = true;
-            showMessage('Completing secure validation & 3DS...', 'info');
+            showMessage('Initializing global compliance 3DS rules checks...', 'info');
             const selectedEnv = envSelector.value;
 
             try {
@@ -509,17 +544,17 @@
                         const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
                         paymentStatus = decodedPayload.status || decodedPayload.outcome; 
                     } catch (e) {
-                        console.warn("Could not decode signature context.");
+                        console.warn("Signature trace failed reading metadata.");
                     }
                 }
 
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
-                    showMessage('Payment Successful via Auto-Authorization!', 'success');
+                    showMessage('Settlement authorized instantly inside secure memory loop!', 'success');
                     paymentContainer.style.display = 'none';
                     return;
                 }
                 
-                showMessage(`Finalizing transaction settlement...`, 'info');
+                showMessage(`Redirecting charge token array to clearing bank proxy pool...`, 'info');
                 
                 const finalChargeResponse = await fetch('/process-payment', {
                     method: 'POST',
@@ -532,14 +567,14 @@
 
                 const chargeResultRaw = await finalChargeResponse.text();
                 if (!finalChargeResponse.ok) {
-                    throw new Error(`Charge Failed: ${chargeResultRaw}`);
+                    throw new Error(`Execution Denied: ${chargeResultRaw}`);
                 }
 
-                showMessage('Transaction successful! Gateway has processed funds.', 'success');
+                showMessage('Settlement parameters resolved completely. Assets allocated.', 'success');
                 paymentContainer.style.display = 'none';
                 
             } catch (error) {
-                showMessage(error.message || 'Payment execution failed.', 'error');
+                showMessage(error.message || 'Fatal execution failure routing to proxy bank.', 'error');
                 payBtn.disabled = false;
             }
         }
