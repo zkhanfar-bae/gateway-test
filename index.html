@@ -3,53 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Checkout</title>
+    <title>TechStore | Premium Checkout</title>
     <link rel="icon" href="data:,">
     
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --border-color: #e2e8f0;
+            --success-bg: #f0fdf4;
+            --success-text: #16a34a;
+            --success-border: #bbf7d0;
+            --error-bg: #fef2f2;
+            --error-text: #dc2626;
+            --error-border: #fecaca;
+            --info-bg: #f0f9ff;
+            --info-text: #0369a1;
+            --info-border: #bae6fd;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            transition: all 0.2s ease-in-out;
+        }
+
+        body { 
+            background: var(--bg-color); 
+            margin: 0; 
+            padding: 40px 20px; 
+            color: var(--text-primary); 
+            line-height: 1.5;
+        }
+
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: 1.8fr 1.2fr; 
+            gap: 32px; 
+        }
+
+        @media (max-width: 850px) { 
+            .container { grid-template-columns: 1fr; gap: 24px; }
+            body { padding: 20px 12px; }
+        }
         
-        .header { grid-column: 1 / -1; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 10px; text-align: center;}
-        .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .product-card { background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .product-card h3 { margin: 0 0 10px 0; font-size: 18px; }
-        .price { color: #2563eb; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; }
-        .btn { background: #000; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; transition: background 0.2s;}
-        .btn:hover { background: #333; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-remove { background: #dc2626; padding: 5px 10px; font-size: 12px; margin-top: 5px; }
-        .btn-remove:hover { background: #b91c1c; }
+        .header { 
+            grid-column: 1 / -1; 
+            background: var(--surface-color); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h2 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .header p { margin: 4px 0 0 0; color: var(--text-secondary); font-size: 14px; }
         
-        .cart-section { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: fit-content; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .cart-item:last-child { border-bottom: none; }
-        .cart-total { font-size: 1.2rem; font-weight: bold; margin: 20px 0; display: flex; justify-content: space-between; border-top: 2px solid #eee; padding-top: 15px;}
+        .badge {
+            color: var(--success-text); 
+            font-weight: 600; 
+            font-size: 11px; 
+            background: var(--success-bg); 
+            padding: 6px 12px; 
+            border-radius: 99px;
+            border: 1px solid var(--success-border);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .products { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 20px; 
+            align-content: start;
+        }
+
+        .product-card { 
+            background: var(--surface-color); 
+            padding: 30px 24px; 
+            border-radius: 16px; 
+            text-align: center; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
+        }
+
+        .product-card h3 { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+        .price { color: var(--accent-color); font-weight: 700; font-size: 1.5rem; margin-bottom: 24px; letter-spacing: -0.5px; }
         
-        .env-toggle { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px;}
-        .env-toggle label { font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase;}
-        .env-toggle select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold;}
+        .btn { 
+            background: var(--text-primary); 
+            color: #fff; 
+            border: none; 
+            padding: 12px 18px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: 600; 
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn:hover { background: #334155; }
+        .btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
         
-        .subscription-box { margin-bottom: 20px; padding: 10px; background: #fdf4ff; border: 1px solid #f0abfc; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
-        .subscription-box input { width: 18px; height: 18px; cursor: pointer; }
-        .subscription-box label { font-weight: 600; color: #86198f; cursor: pointer;}
+        .btn-remove { 
+            background: transparent; 
+            color: var(--error-text);
+            border: 1px solid var(--error-border);
+            padding: 6px 12px; 
+            font-size: 12px; 
+            margin-top: 8px; 
+            width: auto;
+            border-radius: 6px;
+        }
+        .btn-remove:hover { background: var(--error-bg); }
         
-        #payment-container { display: none; margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;}
-        #payment-form { min-height: 50px; margin-bottom: 15px; }
-        .message { margin-top: 15px; font-weight: 500; font-size: 14px; text-align: center; padding: 10px; border-radius: 6px;}
-        .success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;}
-        .error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;}
-        .info { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;}
+        .cart-section { 
+            background: var(--surface-color); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            border: 1px solid var(--border-color);
+            height: fit-content; 
+        }
+
+        .cart-section h3 { margin-top: 0; margin-bottom: 20px; font-size: 18px; font-weight: 700; }
+
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 14px 0; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .cart-item:last-of-type { border-bottom: none; }
+        
+        .cart-total { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            margin: 24px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            border-top: 2px dashed var(--border-color); 
+            padding-top: 20px;
+            letter-spacing: -0.5px;
+        }
+        
+        .env-toggle { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;}
+        .env-toggle label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;}
+        .env-toggle select { 
+            padding: 10px 12px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            font-weight: 600;
+            font-size: 14px;
+            background: #f1f5f9;
+            outline: none;
+            cursor: pointer;
+        }
+        .env-toggle select:focus { border-color: var(--accent-color); background: #fff; }
+        
+        .subscription-box { 
+            margin-bottom: 24px; 
+            padding: 14px; 
+            background: #faf5ff; 
+            border: 1px solid #e9d5ff; 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        .subscription-box input { 
+            width: 18px; 
+            height: 18px; 
+            cursor: pointer; 
+            accent-color: #9333ea;
+        }
+        .subscription-box label { font-size: 13px; font-weight: 600; color: #6b21a8; cursor: pointer; user-select: none;}
+        
+        #payment-container { 
+            display: none; 
+            margin-top: 24px; 
+            background: #f8fafc; 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color);
+        }
+        #payment-form { min-height: 50px; margin-bottom: 20px; }
+        
+        .message { 
+            margin-top: 20px; 
+            font-weight: 600; 
+            font-size: 14px; 
+            text-align: center; 
+            padding: 14px; 
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .success { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border);}
+        .error { background: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border);}
+        .info { background: var(--info-bg); color: var(--info-text); border: 1px solid var(--info-border);}
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header">
-            <h2>Welcome to TechStore Demo</h2>
-            <p>Environment Testing Tool <span style="color: #16a34a; font-weight: bold; font-size: 12px; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">BANK AL ETIHAD PROXY MODE</span></p>
+            <div>
+                <h2>Welcome to TechStore Demo</h2>
+                <p>Environment Testing Tool</p>
+            </div>
+            <span class="badge">BANK AL ETIHAD PROXY MODE</span>
         </div>
 
         <div class="products" id="product-list">
@@ -68,7 +252,7 @@
         <div class="cart-section">
             <h3>Your Cart</h3>
             <div id="cart-items">
-                <p style="color: #666; font-size: 14px;">Your cart is empty.</p>
+                <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px 0;">Your cart is empty.</p>
             </div>
             
             <div class="cart-total">
@@ -86,16 +270,16 @@
 
             <div class="subscription-box">
                 <input type="checkbox" id="save-card-cb">
-                <label for="save-card-cb">Save this card for monthly Subscription renewals</label>
+                <label for="save-card-cb">Save card for monthly renewals</label>
             </div>
 
-            <button type="button" id="checkout-btn" class="btn" style="background: #2563eb;" disabled>Proceed to Checkout</button>
+            <button type="button" id="checkout-btn" class="btn" style="background: var(--accent-color);" disabled>Proceed to Checkout</button>
             <div id="message" class="message" style="display: none;"></div>
 
             <div id="payment-container">
-                <p style="font-size: 14px; font-weight: 600; margin-top: 0;">Enter Card Details</p>
+                <p style="font-size: 14px; font-weight: 700; margin-top: 0; margin-bottom: 16px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Enter Card Details</p>
                 <div id="payment-form"></div>
-                <button type="button" id="pay-btn" class="btn">Complete Payment</button>
+                <button type="button" id="pay-btn" class="btn" style="background: var(--text-primary);">Complete Payment</button>
             </div>
         </div>
     </div>
@@ -138,16 +322,18 @@
         function renderCart() {
             cartItemsDiv.innerHTML = '';
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: #666; font-size: 14px;">Your cart is empty.</p>';
+                cartItemsDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px 0;">Your cart is empty.</p>';
                 checkoutBtn.disabled = true;
             } else {
                 cart.forEach((item, index) => {
                     cartItemsDiv.innerHTML += `
                         <div class="cart-item">
-                            <span style="font-size: 14px; font-weight: 500;">${item.name}</span>
-                            <div style="text-align: right;">
-                                <span style="font-size: 14px;">${item.price.toFixed(2)} JOD</span><br>
+                            <div>
+                                <span style="font-size: 14px; font-weight: 600; display: block;">${item.name}</span>
                                 <button class="btn btn-remove" onclick="window.removeFromCart(${index})">Remove</button>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 15px; font-weight: 700; color: var(--text-primary);">${item.price.toFixed(2)} JOD</span>
                             </div>
                         </div>
                     `;
@@ -273,14 +459,12 @@
                     }
                 }
 
-                // If the user's workflow already captures authorization on complete screen:
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
                     showMessage('Payment Successful via Auto-Authorization!', 'success');
                     paymentContainer.style.display = 'none';
                     return;
                 }
                 
-                // Otherwise, process final balance settlements
                 showMessage(`Finalizing transaction settlement...`, 'info');
                 
                 const finalChargeResponse = await fetch('/process-payment', {
