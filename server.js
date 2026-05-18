@@ -21,7 +21,7 @@ app.post('/capture-context', async (req, res) => {
 
         const AUTH_TOKEN_CAPTURE = isDev
             ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
-            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 🔥 YOUR NEW PROD KEY 🔥
+            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 櫨 YOUR NEW PROD KEY 櫨
 
         const targetOrigin = req.body.origin || "http://localhost:3000";
 
@@ -60,7 +60,7 @@ app.post('/process-payment', async (req, res) => {
 
         const AUTH_TOKEN_PROCESS = isDev
             ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
-            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 🔥 YOUR NEW PROD KEY 🔥
+            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 櫨 YOUR NEW PROD KEY 櫨
 
         const COMPANY_ID = isDev
             ? "A4B4A51F-0E6A-41BE-A8FB-5FCCA54C2F58" // BAE DEV COMPANY ID
@@ -86,6 +86,22 @@ app.post('/process-payment', async (req, res) => {
     } catch (error) {
         console.error('Settlement Execution Failure:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// ROUTE 3: Webhook Listener for Cybersource Notifications
+app.post('/api/webhook', (req, res) => {
+    try {
+        console.log('--- NEW WEBHOOK RECEIVED FROM CYBERSOURCE ---');
+        // This will print the exact JSON payload from Cybersource into your Render logs
+        console.log(JSON.stringify(req.body, null, 2)); 
+        console.log('---------------------------------------------');
+
+        // Cybersource strictly requires a 200 OK response, otherwise it thinks the delivery failed
+        res.status(200).send('Webhook received successfully');
+    } catch (error) {
+        console.error('Webhook Handling Error:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
