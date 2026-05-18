@@ -21,7 +21,7 @@ app.post('/capture-context', async (req, res) => {
 
         const AUTH_TOKEN_CAPTURE = isDev
             ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
-            : "MDAxNjA4Njg3Ol8hI19MdjQqUnp1OUw1YzZoOVRFMnllfWNdNEtCMg=="; // BAE PROD KEY
+            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 🔥 YOUR NEW PROD KEY 🔥
 
         const targetOrigin = req.body.origin || "http://localhost:3000";
 
@@ -60,7 +60,7 @@ app.post('/process-payment', async (req, res) => {
 
         const AUTH_TOKEN_PROCESS = isDev
             ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
-            : "MDAxNjA4Njg3Ol8hI19MdjQqUnp1OUw1YzZoOVRFMnllfWNdNEtCMg=="; // BAE PROD KEY
+            : "ODgxMDI3MzQ0Oj4ua2VQdWklQGFDMkZ6RmduWHclamZlXUVQIWV2ag=="; // 🔥 YOUR NEW PROD KEY 🔥
 
         const COMPANY_ID = isDev
             ? "A4B4A51F-0E6A-41BE-A8FB-5FCCA54C2F58" // BAE DEV COMPANY ID
