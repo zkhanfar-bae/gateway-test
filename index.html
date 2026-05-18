@@ -3,226 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Premium Checkout</title>
+    <title>TechStore | Enterprise Gateway</title>
     <link rel="icon" href="data:,">
     
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --surface-color: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --accent-color: #2563eb;
-            --accent-hover: #1d4ed8;
-            --border-color: #e2e8f0;
-            --success-bg: #f0fdf4;
-            --success-text: #16a34a;
-            --success-border: #bbf7d0;
-            --error-bg: #fef2f2;
-            --error-text: #dc2626;
-            --error-border: #fecaca;
-            --info-bg: #f0f9ff;
-            --info-text: #0369a1;
-            --info-border: #bae6fd;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1e38 50%, #090d16 100%);
+            --panel-bg: rgba(30, 41, 59, 0.45);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glow-blue: #38bdf8;
+            --glow-purple: #c084fc;
+            --btn-gradient: linear-gradient(90deg, #2563eb, #7c3aed);
+            --btn-hover: linear-gradient(90deg, #1d4ed8, #6d28d9);
+            --success: #34d399;
+            --error: #f87171;
+            --info: #60a5fa;
         }
 
         * { 
             box-sizing: border-box; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            transition: all 0.2s ease-in-out;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body { 
-            background: var(--bg-color); 
+            background: var(--bg-gradient); 
             margin: 0; 
-            padding: 40px 20px; 
-            color: var(--text-primary); 
-            line-height: 1.5;
+            padding: 60px 20px; 
+            color: var(--text-main); 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
 
         .container { 
-            max-width: 1100px; 
+            max-width: 1200px; 
             margin: 0 auto; 
             display: grid; 
-            grid-template-columns: 1.8fr 1.2fr; 
-            gap: 32px; 
+            grid-template-columns: 1.7fr 1.3fr; 
+            gap: 40px; 
+            width: 100%;
         }
 
-        @media (max-width: 850px) { 
-            .container { grid-template-columns: 1fr; gap: 24px; }
-            body { padding: 20px 12px; }
+        @media (max-width: 900px) { 
+            .container { grid-template-columns: 1fr; gap: 30px; }
+            body { padding: 30px 16px; }
         }
         
         .header { 
             grid-column: 1 / -1; 
-            background: var(--surface-color); 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-            border: 1px solid var(--border-color);
+            background: var(--panel-bg); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 32px 40px; 
+            border-radius: 24px; 
+            border: 1px solid var(--panel-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        .header h2 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
-        .header p { margin: 4px 0 0 0; color: var(--text-secondary); font-size: 14px; }
+        .header h2 { 
+            margin: 0; 
+            font-size: 28px; 
+            font-weight: 800; 
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p { margin: 6px 0 0 0; color: var(--text-muted); font-size: 14px; font-weight: 500; }
         
         .badge {
-            color: var(--success-text); 
-            font-weight: 600; 
+            color: #fff; 
+            font-weight: 700; 
             font-size: 11px; 
-            background: var(--success-bg); 
-            padding: 6px 12px; 
+            background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(124,58,237,0.2));
+            padding: 8px 16px; 
             border-radius: 99px;
-            border: 1px solid var(--success-border);
-            letter-spacing: 0.5px;
+            border: 1px solid rgba(255,255,255,0.15);
+            letter-spacing: 1px;
             text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(56,189,248,0.15);
         }
 
         .products { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-            gap: 20px; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 24px; 
             align-content: start;
         }
 
         .product-card { 
-            background: var(--surface-color); 
-            padding: 30px 24px; 
-            border-radius: 16px; 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px 30px; 
+            border-radius: 24px; 
             text-align: center; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--panel-border);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top right, rgba(124,58,237,0.15), transparent 60%);
+            pointer-events: none;
         }
 
         .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            border-color: #cbd5e1;
+            transform: translateY(-6px);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(56,189,248,0.1);
         }
 
-        .product-card h3 { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
-        .price { color: var(--accent-color); font-weight: 700; font-size: 1.5rem; margin-bottom: 24px; letter-spacing: -0.5px; }
+        .product-card h3 { margin: 0 0 12px 0; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+        .price { 
+            background: linear-gradient(90deg, var(--glow-blue), var(--glow-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800; 
+            font-size: 1.85rem; 
+            margin-bottom: 30px; 
+            letter-spacing: -1px; 
+        }
         
         .btn { 
-            background: var(--text-primary); 
+            background: var(--btn-gradient); 
             color: #fff; 
             border: none; 
-            padding: 12px 18px; 
-            border-radius: 10px; 
+            padding: 14px 24px; 
+            border-radius: 14px; 
             cursor: pointer; 
             width: 100%; 
-            font-weight: 600; 
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 700; 
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+            letter-spacing: -0.2px;
         }
 
-        .btn:hover { background: #334155; }
-        .btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        .btn:hover { 
+            background: var(--btn-hover); 
+            box-shadow: 0 6px 20px rgba(124,58,237,0.4);
+            transform: scale(1.02);
+        }
+        .btn:disabled { 
+            background: #334155 !important; 
+            color: #64748b !important; 
+            cursor: not-allowed; 
+            box-shadow: none !important;
+            transform: none !important;
+        }
         
         .btn-remove { 
-            background: transparent; 
-            color: var(--error-text);
-            border: 1px solid var(--error-border);
-            padding: 6px 12px; 
+            background: rgba(248,113,113,0.1); 
+            color: var(--error);
+            border: 1px solid rgba(248,113,113,0.2);
+            padding: 6px 14px; 
             font-size: 12px; 
-            margin-top: 8px; 
+            margin-top: 12px; 
             width: auto;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-weight: 600;
         }
-        .btn-remove:hover { background: var(--error-bg); }
+        .btn-remove:hover { background: rgba(248,113,113,0.2); border-color: var(--error); }
         
         .cart-section { 
-            background: var(--surface-color); 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-            border: 1px solid var(--border-color);
+            background: var(--panel-bg); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 40px; 
+            border-radius: 24px; 
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             height: fit-content; 
         }
 
-        .cart-section h3 { margin-top: 0; margin-bottom: 20px; font-size: 18px; font-weight: 700; }
+        .cart-section h3 { margin-top: 0; margin-bottom: 24px; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
 
         .cart-item { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 14px 0; 
-            border-bottom: 1px solid var(--border-color); 
+            padding: 18px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.06); 
         }
         .cart-item:last-of-type { border-bottom: none; }
         
         .cart-total { 
-            font-size: 1.25rem; 
-            font-weight: 700; 
-            margin: 24px 0; 
+            font-size: 1.4rem; 
+            font-weight: 800; 
+            margin: 30px 0; 
             display: flex; 
             justify-content: space-between; 
-            border-top: 2px dashed var(--border-color); 
-            padding-top: 20px;
+            border-top: 1px dashed rgba(255,255,255,0.15); 
+            padding-top: 24px;
             letter-spacing: -0.5px;
         }
         
-        .env-toggle { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;}
-        .env-toggle label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;}
+        .env-toggle { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;}
+        .env-toggle label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
         .env-toggle select { 
-            padding: 10px 12px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
+            padding: 14px; 
+            border-radius: 14px; 
+            border: 1px solid var(--panel-border); 
             font-weight: 600;
-            font-size: 14px;
-            background: #f1f5f9;
+            font-size: 15px;
+            background: #1e293b;
+            color: #fff;
             outline: none;
             cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
         }
-        .env-toggle select:focus { border-color: var(--accent-color); background: #fff; }
+        .env-toggle select:focus { border-color: var(--glow-blue); box-shadow: 0 0 15px rgba(56,189,248,0.15); }
         
         .subscription-box { 
-            margin-bottom: 24px; 
-            padding: 14px; 
-            background: #faf5ff; 
-            border: 1px solid #e9d5ff; 
-            border-radius: 10px; 
+            margin-bottom: 30px; 
+            padding: 16px; 
+            background: rgba(192,132,252,0.06); 
+            border: 1px solid rgba(192,132,252,0.15); 
+            border-radius: 14px; 
             display: flex; 
             align-items: center; 
-            gap: 12px; 
+            gap: 14px; 
         }
         .subscription-box input { 
-            width: 18px; 
-            height: 18px; 
+            width: 20px; 
+            height: 20px; 
             cursor: pointer; 
-            accent-color: #9333ea;
+            accent-color: var(--glow-purple);
         }
-        .subscription-box label { font-size: 13px; font-weight: 600; color: #6b21a8; cursor: pointer; user-select: none;}
+        .subscription-box label { font-size: 14px; font-weight: 600; color: #d8b4fe; cursor: pointer; user-select: none;}
         
         #payment-container { 
             display: none; 
-            margin-top: 24px; 
-            background: #f8fafc; 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-color);
+            margin-top: 30px; 
+            background: rgba(15,23,42,0.6); 
+            padding: 24px; 
+            border-radius: 16px; 
+            border: 1px solid var(--panel-border);
         }
-        #payment-form { min-height: 50px; margin-bottom: 20px; }
+        #payment-form { min-height: 50px; margin-bottom: 24px; }
         
+        /* Targets injected CyberSource iFrame components seamlessly */
+        #payment-form iframe { background: transparent !important; color-scheme: dark; }
+
         .message { 
-            margin-top: 20px; 
+            margin-top: 24px; 
             font-weight: 600; 
             font-size: 14px; 
             text-align: center; 
-            padding: 14px; 
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            padding: 16px; 
+            border-radius: 14px;
+            backdrop-filter: blur(8px);
         }
-        .success { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border);}
-        .error { background: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border);}
-        .info { background: var(--info-bg); color: var(--info-text); border: 1px solid var(--info-border);}
+        .success { background: rgba(52,211,153,0.1); color: var(--success); border: 1px solid rgba(52,211,153,0.25); box-shadow: 0 0 20px rgba(52,211,153,0.1); }
+        .error { background: rgba(248,113,113,0.1); color: var(--error); border: 1px solid rgba(248,113,113,0.25); box-shadow: 0 0 20px rgba(248,113,113,0.1); }
+        .info { background: rgba(96,165,250,0.1); color: var(--info); border: 1px solid rgba(96,165,250,0.25); }
     </style>
 </head>
 <body>
@@ -230,10 +284,10 @@
     <div class="container">
         <div class="header">
             <div>
-                <h2>Welcome to TechStore Demo</h2>
-                <p>Environment Testing Tool</p>
+                <h2>TechStore Gateway Engine</h2>
+                <p>Enterprise Environment Node Management</p>
             </div>
-            <span class="badge">BANK AL ETIHAD PROXY MODE</span>
+            <span class="badge">Bank Al Etihad Proxy</span>
         </div>
 
         <div class="products" id="product-list">
@@ -250,18 +304,18 @@
         </div>
 
         <div class="cart-section">
-            <h3>Your Cart</h3>
+            <h3>Secure Allocation</h3>
             <div id="cart-items">
-                <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px 0;">Your cart is empty.</p>
+                <p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0; font-weight: 500;">No items queued in allocation module.</p>
             </div>
             
             <div class="cart-total">
-                <span>Total:</span>
+                <span>Aggregated Total:</span>
                 <span id="cart-total-price">0.00 JOD</span>
             </div>
 
             <div class="env-toggle">
-                <label for="env-selector">Select Environment</label>
+                <label for="env-selector">Target Network Layer</label>
                 <select id="env-selector">
                     <option value="prod">BAE / CyberSource (LIVE PROD)</option>
                     <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
@@ -270,16 +324,16 @@
 
             <div class="subscription-box">
                 <input type="checkbox" id="save-card-cb">
-                <label for="save-card-cb">Save card for monthly renewals</label>
+                <label for="save-card-cb">Authorize token recurring intervals</label>
             </div>
 
-            <button type="button" id="checkout-btn" class="btn" style="background: var(--accent-color);" disabled>Proceed to Checkout</button>
+            <button type="button" id="checkout-btn" class="btn" disabled>Initialize Gateway Handshake</button>
             <div id="message" class="message" style="display: none;"></div>
 
             <div id="payment-container">
-                <p style="font-size: 14px; font-weight: 700; margin-top: 0; margin-bottom: 16px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Enter Card Details</p>
+                <p style="font-size: 11px; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Secure Hosted Vault Fields</p>
                 <div id="payment-form"></div>
-                <button type="button" id="pay-btn" class="btn" style="background: var(--text-primary);">Complete Payment</button>
+                <button type="button" id="pay-btn" class="btn" style="background: var(--btn-gradient);">Execute Settlement</button>
             </div>
         </div>
     </div>
@@ -322,18 +376,18 @@
         function renderCart() {
             cartItemsDiv.innerHTML = '';
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px 0;">Your cart is empty.</p>';
+                cartItemsDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0; font-weight: 500;">No items queued in allocation module.</p>';
                 checkoutBtn.disabled = true;
             } else {
                 cart.forEach((item, index) => {
                     cartItemsDiv.innerHTML += `
                         <div class="cart-item">
                             <div>
-                                <span style="font-size: 14px; font-weight: 600; display: block;">${item.name}</span>
+                                <span style="font-size: 15px; font-weight: 600; display: block; color: var(--text-main);">${item.name}</span>
                                 <button class="btn btn-remove" onclick="window.removeFromCart(${index})">Remove</button>
                             </div>
                             <div style="text-align: right;">
-                                <span style="font-size: 15px; font-weight: 700; color: var(--text-primary);">${item.price.toFixed(2)} JOD</span>
+                                <span style="font-size: 16px; font-weight: 700; color: #fff;">${item.price.toFixed(2)} JOD</span>
                             </div>
                         </div>
                     `;
