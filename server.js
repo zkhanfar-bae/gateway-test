@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const cybersourceRestApi = require('cybersource-rest-client');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,126 +9,86 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// Helper function to build Cybersource Configuration
-function getCyberConfig(envReq) {
-    const runEnv = (process.env.CYBER_ENV === 'production' || envReq === 'prod') 
-        ? 'api.cybersource.com' 
-        : 'apitest.cybersource.com';
-
-    return {
-        authenticationType: 'http_signature',
-        runEnvironment: runEnv,
-        merchantID: process.env.CYBERSOURCE_MERCHANT_ID,
-        merchantKeyId: process.env.CYBERSOURCE_KEY_ID,
-        merchantsecretKey: process.env.CYBERSOURCE_SECRET_KEY, 
-        logConfiguration: { enableLog: false }
-    };
-}
-
-// ROUTE 1: Generate the Capture Context directly from Cybersource
-app.post('/capture-context', (req, res) => {
+// ROUTE 1: Generate the Initial Token via Bank Al Etihad Token Proxy Nodes
+app.post('/capture-context', async (req, res) => {
     try {
-        const targetOrigin = req.body.origin || process.env.CUSTOM_DOMAIN || 'http://localhost:3000';
-        const configObject = getCyberConfig(req.body.env);
-        const apiClient = new cybersourceRestApi.ApiClient();
-
-        // Build the capture context request
-        const requestObj = {
-            clientVersion: "1.1", 
-            targetOrigins: [targetOrigin],
-            allowedPaymentTypes: ["PANENTRY", "GOOGLEPAY", "APPLEPAY"], 
-            allowedCardNetworks: ["VISA", "MASTERCARD"],
-            // FIX: Added the mandatory locale field so Cybersource knows what language to render
-            locale: "en-US", 
-            orderInformation: {
-                amountDetails: {
-                    totalAmount: req.body.amount || "0.10",
-                    currency: "JOD"
-                }
-            }
-        };
+        const isDev = req.body.env === "dev";
         
-        // Inject Tokenization/Vault commands for subscriptions
-        if (req.body.isSubscription) {
-            console.log("Injecting Tokenize commands into Capture Context...");
-            requestObj.actionList = ["TOKEN_CREATE"];
-            requestObj.actionTokenTypes = ["customer", "paymentInstrument"];
-        }
+        // Match exact endpoint destinations used by your colleague
+        const CAPTURE_URL = isDev
+            ? "https://merchant-order-token.baelab.net/v1/payments/capture-context"
+            : "https://merchant-order-token.bankaletihad.com/v1/payments/app2/capture-context";
 
-        const instance = new cybersourceRestApi.UnifiedCheckoutCaptureContextApi(configObject, apiClient);
-        
-        instance.generateUnifiedCheckoutCaptureContext(requestObj, function (error, data, response) {
-            if (error) {
-                let errorDetails = error.message || "Failed to generate context";
-                if (response && response.text) {
-                    errorDetails = `${errorDetails} - ${response.text}`;
-                }
-                console.error('Error generating capture context:', errorDetails);
-                return res.status(500).json({ error: errorDetails });
-            }
-            res.send(data);
+        const AUTH_TOKEN_CAPTURE = isDev
+            ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
+            : "MDAxNjA4Njg3Ol8hI19MdjQqUnp1OUw1YzZoOVRFMnllfWNdNEtCMg=="; // BAE PROD KEY
+
+        const targetOrigin = req.body.origin || "http://localhost:3000";
+
+        const response = await fetch(CAPTURE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": AUTH_TOKEN_CAPTURE,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            },
+            body: JSON.stringify({
+                targetOrigins: [targetOrigin, "https://ziadqula28.github.io"],
+                totalAmount: parseFloat(req.body.amount).toFixed(2),
+                currency: "JOD",
+                withDecode: false
+            })
         });
+
+        const data = await response.text();
+        return res.status(response.status).send(data);
+
     } catch (error) {
-        console.error('Context Setup Error:', error);
+        console.error('Context Handshake Failure:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// ROUTE 2: Process the Final Payment directly with Cybersource
-app.post('/process-payment', (req, res) => {
+// ROUTE 2: Process and Finalize Funds via BAE Hosted Checkout Proxy
+app.post('/process-payment', async (req, res) => {
     try {
-        const configObject = getCyberConfig(req.body.env);
-        const apiClient = new cybersourceRestApi.ApiClient();
-        const instance = new cybersourceRestApi.PaymentsApi(configObject, apiClient);
+        const isDev = req.body.env === "dev";
 
-        const requestObj = new cybersourceRestApi.CreatePaymentRequest();
+        const PROCESS_URL =
+            "https://api.apps-console.bankaletihad.com/BAF3E974-52AA-7598-FF04-56945EF93500/045FCC75-62A0-EE53-FF87-4FD683745500/services/businessMarketplace/pay/hostedCheckout";
 
-        // 1. Client Reference
-        const clientReferenceInformation = new cybersourceRestApi.Ptsv2paymentsClientReferenceInformation();
-        clientReferenceInformation.code = "ORDER_" + Date.now();
-        requestObj.clientReferenceInformation = clientReferenceInformation;
+        const AUTH_TOKEN_PROCESS = isDev
+            ? "MDAxMTUwOTkyOilFVj02UU1GX2RDVmdUYW4yUEd+NnBYaCNzRUtrbg==" // BAE DEV KEY
+            : "MDAxNjA4Njg3Ol8hI19MdjQqUnp1OUw1YzZoOVRFMnllfWNdNEtCMg=="; // BAE PROD KEY
 
-        // 2. Processing Information (Auto-Capture & Tokenization)
-        const processingInformation = new cybersourceRestApi.Ptsv2paymentsProcessingInformation();
-        processingInformation.capture = true;
-        if (req.body.isSubscription) {
-            processingInformation.actionList = ["TOKEN_CREATE"];
-            processingInformation.actionTokenTypes = ["customer", "paymentInstrument"];
-        }
-        requestObj.processingInformation = processingInformation;
+        const COMPANY_ID = isDev
+            ? "A4B4A51F-0E6A-41BE-A8FB-5FCCA54C2F58" // BAE DEV COMPANY ID
+            : "6361F8DC-BCAE-4D4A-B903-7B8121A47922"; // BAE PROD COMPANY ID
 
-        // 3. Payment Information (Inject the transient token from the frontend)
-        const paymentInformation = new cybersourceRestApi.Ptsv2paymentsPaymentInformation();
-        const tokenInfo = new cybersourceRestApi.Ptsv2paymentsPaymentInformationTokenInformation();
-        tokenInfo.transientTokenJwt = req.body.transientToken;
-        paymentInformation.tokenInformation = tokenInfo;
-        requestObj.paymentInformation = paymentInformation;
-
-        // 4. Order Information (Amount and Currency)
-        const orderInformation = new cybersourceRestApi.Ptsv2paymentsOrderInformation();
-        const amountDetails = new cybersourceRestApi.Ptsv2paymentsOrderInformationAmountDetails();
-        amountDetails.totalAmount = req.body.amount || "0.10"; 
-        amountDetails.currency = "JOD";
-        orderInformation.amountDetails = amountDetails;
-        requestObj.orderInformation = orderInformation;
-
-        instance.createPayment(requestObj, function (error, data, response) {
-            if (error) {
-                let errorDetails = error.message || "Payment declined or failed";
-                if (response && response.text) {
-                    errorDetails = `${errorDetails} - ${response.text}`;
-                }
-                console.error('Error processing payment:', errorDetails);
-                return res.status(500).json({ error: errorDetails });
-            }
-            res.json(data);
+        const response = await fetch(PROCESS_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": AUTH_TOKEN_PROCESS,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            },
+            body: JSON.stringify({
+                token: req.body.transientToken,
+                companyId: COMPANY_ID
+            })
         });
+
+        const data = await response.text();
+        return res.status(response.status).send(data);
+
     } catch (error) {
-        console.error('Payment Execution Error:', error);
+        console.error('Settlement Execution Failure:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
 app.listen(port, () => {
-    console.log(`Direct Cybersource Gateway running on port ${port}`);
+    console.log(`TechStore Gateway running via BAE Routing Proxy on port ${port}`);
 });
