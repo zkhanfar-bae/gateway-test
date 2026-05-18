@@ -49,7 +49,7 @@
     <div class="container">
         <div class="header">
             <h2>Welcome to TechStore Demo</h2>
-            <p>Environment Testing Tool <span style="color: #0284c7; font-weight: bold; font-size: 12px; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">DIRECT INTEGRATION MODE</span></p>
+            <p>Environment Testing Tool <span style="color: #16a34a; font-weight: bold; font-size: 12px; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">BANK AL ETIHAD PROXY MODE</span></p>
         </div>
 
         <div class="products" id="product-list">
@@ -79,8 +79,8 @@
             <div class="env-toggle">
                 <label for="env-selector">Select Environment</label>
                 <select id="env-selector">
-                    <option value="prod">Cybersource (LIVE PROD)</option>
-                    <option value="dev">Cybersource (Sandbox / DEV)</option>
+                    <option value="prod">BAE / CyberSource (LIVE PROD)</option>
+                    <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
                 </select>
             </div>
 
@@ -113,7 +113,6 @@
         const envSelector = document.getElementById('env-selector');
         const saveCardCheckbox = document.getElementById('save-card-cb');
 
-        // FIX: Using btn directly instead of e.target to prevent child element click issues
         document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 if (isCheckingOut) return;
@@ -172,11 +171,11 @@
             checkoutBtn.disabled = true;
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
-            const isSubscription = saveCardCheckbox.checked; 
             
-            showMessage(`Connecting to server...`, 'info');
+            showMessage(`Connecting to Proxy Server (${selectedEnv.toUpperCase()})...`, 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
+            envSelector.disabled = true;
 
             try {
                 const response = await fetch('/capture-context', { 
@@ -185,8 +184,7 @@
                     body: JSON.stringify({ 
                         amount: finalAmount,
                         origin: window.location.origin,
-                        env: selectedEnv,
-                        isSubscription: isSubscription
+                        env: selectedEnv
                     })
                 });
                 
@@ -201,29 +199,36 @@
                     tokenRaw = rawText.replace(/^"|"$/g, "").trim();
                 }
 
-                if (!tokenRaw) throw new Error("Could not parse token.");
+                if (!tokenRaw) throw new Error("Could not parse bank secure token.");
 
-                showMessage('Downloading exact SDK from Cybersource...', 'info');
+                showMessage('Token received. Downloading Safe SDK...', 'info');
                 
                 const payloadBase64 = tokenRaw.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
                 const sdkUrl = decodedPayload.ctx[0].data.clientLibrary;
+                const sdkIntegrity = decodedPayload.ctx[0].data.clientLibraryIntegrity || null;
 
                 await new Promise((resolve, reject) => {
                     const existing = document.querySelector(`script[data-cybersource-sdk="true"]`);
                     if (existing) existing.remove();
                     delete window.Accept;
+                    delete window.VAS;
+                    delete window.CyberSource;
 
                     const script = document.createElement("script");
                     script.src = sdkUrl;
                     script.async = true;
                     script.setAttribute("data-cybersource-sdk", "true");
+                    if (sdkIntegrity) {
+                        script.integrity = sdkIntegrity;
+                        script.crossOrigin = "anonymous";
+                    }
                     script.onload = () => setTimeout(resolve, 200);
-                    script.onerror = () => reject(new Error("Failed to load bank SDK"));
+                    script.onerror = () => reject(new Error("Failed to load secure bank SDK"));
                     document.body.appendChild(script);
                 });
 
-                showMessage('Rendering secure fields...', 'info');
+                showMessage('Rendering payment sheet fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
@@ -246,14 +251,14 @@
                 isCheckingOut = false;
                 document.querySelectorAll('.add-to-cart-btn, .btn-remove').forEach(b => b.disabled = false);
                 saveCardCheckbox.disabled = false;
+                envSelector.disabled = false;
             }
         });
 
         async function processPayment() {
             payBtn.disabled = true;
-            showMessage('Authenticating 3DS...', 'info');
+            showMessage('Completing secure validation & 3DS...', 'info');
             const selectedEnv = envSelector.value;
-            const isSubscription = saveCardCheckbox.checked;
 
             try {
                 const completeResult = await up.complete(transientToken);
@@ -264,51 +269,39 @@
                         const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
                         paymentStatus = decodedPayload.status || decodedPayload.outcome; 
                     } catch (e) {
-                        console.warn("Could not decode JWT");
+                        console.warn("Could not decode signature context.");
                     }
                 }
 
+                // If the user's workflow already captures authorization on complete screen:
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
-                    
-                    showMessage(`Processing charge & Vaulting Card...`, 'info');
-                    
-                    if (paymentStatus !== "AUTHORIZED") {
-                        const finalAmount = getCartTotal(); 
-
-                        const finalChargeResponse = await fetch('/process-payment', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                transientToken: completeResult,
-                                env: selectedEnv,
-                                isSubscription: isSubscription,
-                                amount: finalAmount 
-                            })
-                        });
-
-                        const chargeResultRaw = await finalChargeResponse.text();
-
-                        console.log("====================================");
-                        console.log("BANK RESPONSE (Check for Tokens!):");
-                        console.log(chargeResultRaw);
-                        console.log("====================================");
-
-                        if (!finalChargeResponse.ok) {
-                            throw new Error(`Charge Failed: ${chargeResultRaw}`);
-                        }
-                    }
-
-                    showMessage('Payment successful! Check the console for your Vault Token.', 'success');
+                    showMessage('Payment Successful via Auto-Authorization!', 'success');
                     paymentContainer.style.display = 'none';
-                    
-                } else if (paymentStatus === "DECLINED") {
-                    showMessage('Payment failed. Card declined.', 'error');
-                    payBtn.disabled = false;
-                } else {
-                    throw new Error(`Payment failed. Bank returned status: ${paymentStatus || 'Unknown'}`);
+                    return;
                 }
+                
+                // Otherwise, process final balance settlements
+                showMessage(`Finalizing transaction settlement...`, 'info');
+                
+                const finalChargeResponse = await fetch('/process-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        transientToken: completeResult,
+                        env: selectedEnv
+                    })
+                });
+
+                const chargeResultRaw = await finalChargeResponse.text();
+                if (!finalChargeResponse.ok) {
+                    throw new Error(`Charge Failed: ${chargeResultRaw}`);
+                }
+
+                showMessage('Transaction successful! Gateway has processed funds.', 'success');
+                paymentContainer.style.display = 'none';
+                
             } catch (error) {
-                showMessage(error.message || 'Payment failed.', 'error');
+                showMessage(error.message || 'Payment execution failed.', 'error');
                 payBtn.disabled = false;
             }
         }
