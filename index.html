@@ -3,43 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Premium Retail Store</title>
+    <title>TechStore | Premium Retail</title>
     <link rel="icon" href="data:,">
     
     <style>
         :root {
-            /* VIBRANT NEW COLOR PALETTE */
-            --bg: #f5f3ff; /* Very faint Violet background */
-            --surface: #ffffff;
+            /* PREMIUM STEALTH DARK MODE PALETTE */
+            --bg: #000000;
+            --surface: #0f0f11;
+            --surface-elevated: #18181b;
             
-            --text-main: #0f172a; /* Slate 900 - Navy for text */
-            --text-muted: #64748b; /* Slate 500 - Gray for descriptions */
-            --border: #e9e3ff; /* Light Violet border */
+            --text-main: #f8fafc;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
             
-            /* Primary Action Color - Indigo */
-            --accent: #4f46e5; /* Indigo 600 */
-            --accent-hover: #3730a3; /* Indigo 800 */
+            /* High Contrast Accents */
+            --accent: #ffffff;
+            --accent-hover: #e4e4e7;
+            --accent-text: #000000;
             
-            /* Highlight Color - Fuchsia */
-            --highlight: #d946ef; /* Fuchsia 600 - used for prices */
-            --highlight-hover: #a21caf; /* Fuchsia 700 */
-            
-            /* Background tints */
-            --product-blue-bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); /* Light blue gradient */
-            --product-purple-bg: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); /* Light purple gradient */
-
-            /* Status Colors (kept standard but slightly brighter) */
-            --success-bg: #ecfdf5;
-            --success-text: #059669;
-            --error-bg: #fff1f2;
-            --error-text: #e11d48;
-            --info-bg: #eff6ff;
-            --info-text: #2563eb;
+            /* Status Colors (Muted for dark mode) */
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --success-text: #34d399;
+            --error-bg: rgba(239, 68, 68, 0.1);
+            --error-text: #f87171;
+            --info-bg: rgba(59, 130, 246, 0.1);
+            --info-text: #60a5fa;
         }
 
         * { 
             box-sizing: border-box; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             margin: 0;
             padding: 0;
             transition: all 0.2s ease-in-out;
@@ -49,11 +43,12 @@
             background: var(--bg); 
             color: var(--text-main); 
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Navigation Bar Header */
         .navbar {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
@@ -64,258 +59,246 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.05); /* Slight violet tint shadow */
         }
 
         .nav-brand { 
-            font-size: 24px; 
-            font-weight: 800; 
-            letter-spacing: -1px; 
+            font-size: 20px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px; 
             cursor: pointer;
-            /* Dynamic Gradient Logo */
-            background: linear-gradient(90deg, var(--accent) 0%, var(--highlight) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-main);
         }
         .nav-links { display: flex; gap: 32px; list-style: none; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 14px; }
-        .nav-links a:hover { color: var(--accent); }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: 13px; letter-spacing: 0.5px;}
+        .nav-links a:hover { color: var(--text-main); }
         
         .nav-actions { display: flex; align-items: center; gap: 20px; color: var(--text-muted);}
-        .nav-actions svg:hover { color: var(--highlight); cursor: pointer;}
+        .nav-actions svg:hover { color: var(--text-main); cursor: pointer;}
         
         /* Store Main Body Layout */
         .store-container {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
             padding: 60px 40px;
             display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 48px;
+            grid-template-columns: 1fr 400px;
+            gap: 60px;
         }
 
         @media (max-width: 1100px) {
-            .store-container { grid-template-columns: 1fr; gap: 32px; padding: 30px 20px; }
+            .store-container { grid-template-columns: 1fr; gap: 40px; padding: 40px 20px; }
         }
 
         /* Product Catalog Grid Layout */
-        .catalog-headline { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
+        .catalog-headline { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 30px; color: var(--text-main); }
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 30px; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 24px; 
         }
 
         .store-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 12px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.04);
         }
         .store-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.12);
-            border-color: #d1c4e9; /* Medium violet */
+            border-color: #52525b;
         }
 
-        /* Clean placeholder graphic block */
+        /* Dark, minimalist image containers */
         .product-image-container {
-            height: 240px;
+            height: 220px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            background: radial-gradient(circle at center, #18181b 0%, #000000 100%);
+            border-bottom: 1px solid var(--border);
         }
-        .product-image-container svg { width: 72px; height: 72px; }
+        .product-image-container svg { width: 50px; height: 50px; color: #52525b; }
 
-        /* Specific Gradient Tints for Image Containers */
-        #img-card-1 { background: var(--product-blue-bg); color: #0284c7; } /* Blue tint icon */
-        #img-card-2 { background: var(--product-purple-bg); color: #7c3aed; } /* Purple tint icon */
-
-        .product-details { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-details h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
-        .product-details p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+        .product-details { padding: 24px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-details h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; letter-spacing: 0px; }
+        .product-details p { color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 24px; }
         
         .product-footer { display: flex; justify-content: space-between; align-items: center; gap: 15px;}
         
-        /* Highlight Prices with Fuchsia */
-        .product-price { font-size: 20px; font-weight: 800; letter-spacing: -1px; color: var(--highlight); }
-        .currency-label { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 2px;}
+        .product-price { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: var(--text-main); }
+        .currency-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-left: 2px;}
 
-        /* Standard Storefront Interactive Buttons (Indigo theme) */
+        /* Stealth Buttons (White on Black for contrast) */
         .action-btn {
             background: var(--accent);
-            color: #fff;
+            color: var(--accent-text);
             border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 14px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-            letter-spacing: -0.2px;
         }
-        .action-btn:hover { background: var(--accent-hover); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3); }
-        .action-btn:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
+        .action-btn:hover { background: var(--accent-hover); }
+        .action-btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
 
         /* Shopping Sidebar Checkout Sheet */
         .cart-panel {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.05);
+            border-radius: 12px;
+            padding: 32px;
             height: fit-content;
             position: sticky;
-            top: 110px;
+            top: 100px;
         }
-        .cart-panel h2 { font-size: 22px; font-weight: 800; margin-bottom: 30px; letter-spacing: -1px; }
+        .cart-panel h2 { font-size: 18px; font-weight: 600; margin-bottom: 24px; letter-spacing: -0.5px; }
 
         .cart-items-container { max-height: 240px; overflow-y: auto; margin-bottom: 24px; padding-right: 5px; }
         
-        /* Customize Scrollbar for cart items */
-        .cart-items-container::-webkit-scrollbar { width: 5px; }
-        .cart-items-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .cart-items-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+        /* Customize Scrollbar for dark theme */
+        .cart-items-container::-webkit-scrollbar { width: 4px; }
+        .cart-items-container::-webkit-scrollbar-track { background: transparent; }
+        .cart-items-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
         
         .checkout-row {
             display: flex;
             justify-content: space-between;
-            padding: 16px 0;
-            font-size: 15px;
+            padding: 14px 0;
+            font-size: 14px;
             border-bottom: 1px solid var(--border);
         }
         
-        /* Bold Total Price highlighted in Fuchsia */
         .checkout-row.total {
-            border-top: 2px dashed #d1c4e9;
+            border-top: 1px solid #3f3f46;
             border-bottom: none;
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--highlight);
-            padding-top: 24px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+            padding-top: 20px;
             margin-top: 10px;
-            letter-spacing: -1px;
         }
 
         .btn-remove-item {
-            color: var(--error-text);
+            color: var(--text-muted);
             background: transparent;
             border: none;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
-        .btn-remove-item:hover { text-decoration: underline; color: #b91c1c; }
+        .btn-remove-item:hover { color: var(--error-text); }
 
         /* Form Dropdown Select Layout wrappers */
-        .form-select-group { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
-        .form-select-group label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .form-select-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .form-select-group label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .form-select-group select {
-            padding: 14px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 6px;
             border: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 14px;
-            background: #fdfcfe; /* Subtle lavender tint */
+            font-weight: 500;
+            font-size: 13px;
+            background: var(--surface-elevated);
             color: var(--text-main);
             outline: none;
             cursor: pointer;
         }
-        .form-select-group select:focus { border-color: var(--highlight); box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1); }
+        .form-select-group select:focus { border-color: #52525b; }
 
         .checkbox-container {
-            margin-bottom: 30px;
-            padding: 16px;
-            background: #fdfcfe;
+            margin-bottom: 24px;
+            padding: 14px;
+            background: var(--surface-elevated);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
-        .checkbox-container input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
-        .checkbox-container label { font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: pointer; }
+        .checkbox-container input { width: 16px; height: 16px; cursor: pointer; accent-color: #ffffff; }
+        .checkbox-container label { font-size: 13px; font-weight: 400; color: var(--text-muted); cursor: pointer; }
 
         /* Secure payment iFrame area */
         #payment-container {
             display: none;
-            margin-top: 30px;
-            background: #fdfcfe;
+            margin-top: 24px;
+            background: var(--surface-elevated);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.03);
+            border-radius: 8px;
+            padding: 20px;
         }
-        #payment-form { min-height: 60px; margin-bottom: 24px; }
+        #payment-form { min-height: 60px; margin-bottom: 20px; }
+        
+        /* Make iframe fields adapt to dark mode if supported */
+        #payment-form iframe { color-scheme: dark; }
 
         .status-alert {
-            margin-top: 24px;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
             display: none;
             text-align: center;
-            letter-spacing: -0.2px;
         }
-        .status-alert.info { background: var(--info-bg); color: var(--info-text); border: 1px solid #bfdbfe; }
-        .status-alert.success { background: var(--success-bg); color: var(--success-text); border: 1px solid #a7f3d0; }
-        .status-alert.error { background: var(--error-bg); color: var(--error-text); border: 1px solid #fecdd3; }
+        .status-alert.info { background: var(--info-bg); color: var(--info-text); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .status-alert.success { background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-alert.error { background: var(--error-bg); color: var(--error-text); border: 1px solid rgba(239, 68, 68, 0.2); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="nav-brand">TechStore</div>
+        <div class="nav-brand">TECHSTORE.</div>
         <ul class="nav-links">
-            <li><a href="#">Shop</a></li>
-            <li><a href="#">New Arrivals</a></li>
-            <li><a href="#">Support</a></li>
+            <li><a href="#">Hardware</a></li>
+            <li><a href="#">Software</a></li>
+            <li><a href="#">Enterprise</a></li>
         </ul>
         <div class="nav-actions">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap='round' stroke-linejoin='round'><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap='round' stroke-linejoin='round'><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
         </div>
     </nav>
 
     <div class="store-container">
         <div>
-            <h2 class="catalog-headline">Explore Products</h2>
+            <h2 class="catalog-headline">Available Modules</h2>
             <div class="product-grid" id="product-list">
                 
                 <div class="store-card">
-                    <div class="product-image-container" id="img-card-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    <div class="product-image-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                     </div>
                     <div class="product-details">
                         <div>
-                            <h3>Basic API Key</h3>
-                            <p>Get instant cloud processing execution capabilities across our global edge integration pipeline node hubs seamlessly.</p>
+                            <h3>Core API Access</h3>
+                            <p>Direct integration keys for global edge processing and secure sandbox routing.</p>
                         </div>
                         <div class="product-footer">
                             <div class="product-price">0.10 <span class="currency-label">USD</span></div>
-                            <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
+                            <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Core API Access" data-price="0.10">Add</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="store-card">
-                    <div class="product-image-container" id="img-card-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                    <div class="product-image-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                     </div>
                     <div class="product-details">
                         <div>
-                            <h3>Pro Dashboard</h3>
-                            <p>Unlock detailed operational tracking graphs, latency monitoring matrices, and continuous reporting log streams.</p>
+                            <h3>Pro Telemetry</h3>
+                            <p>Advanced metrics tracking, latency logs, and continuous authorization reporting.</p>
                         </div>
                         <div class="product-footer">
                             <div class="product-price">0.15 <span class="currency-label">USD</span></div>
-                            <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
+                            <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Telemetry" data-price="0.15">Add</button>
                         </div>
                     </div>
                 </div>
@@ -324,31 +307,31 @@
         </div>
 
         <div class="cart-panel">
-            <h2>Order Summary</h2>
+            <h2>Summary</h2>
             
             <div class="form-select-group">
-                <label for="currency-selector">Payment Currency</label>
+                <label for="currency-selector">Billing Currency</label>
                 <select id="currency-selector">
-                    <option value="USD">USD ($)</option>
-                    <option value="JOD">JOD (د.أ)</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="JOD">JOD - Jordanian Dinar</option>
                 </select>
             </div>
 
             <div class="cart-items-container" id="cart-items">
-                <p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0;">Your cart is empty.</p>
+                <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 30px 0;">Cart is empty.</p>
             </div>
 
             <div class="form-select-group">
-                <label for="env-selector">Payment Gateway Layer</label>
+                <label for="env-selector">Network Route</label>
                 <select id="env-selector">
-                    <option value="prod">BAE / CyberSource (LIVE PROD)</option>
-                    <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
+                    <option value="prod">Production (Live)</option>
+                    <option value="dev">Development (Sandbox)</option>
                 </select>
             </div>
 
             <div class="checkbox-container">
                 <input type="checkbox" id="save-card-cb">
-                <label for="save-card-cb">Save card for future monthly renewals</label>
+                <label for="save-card-cb">Store credentials securely</label>
             </div>
 
             <div class="checkout-row total">
@@ -356,13 +339,13 @@
                 <span id="cart-total-price">0.00 USD</span>
             </div>
 
-            <button type="button" id="checkout-btn" class="action-btn" style="width: 100%; margin-top: 30px; padding: 18px;" disabled>Proceed to Secure Checkout</button>
+            <button type="button" id="checkout-btn" class="action-btn" style="width: 100%; margin-top: 24px; padding: 14px;" disabled>Checkout</button>
             <div id="message" class="status-alert"></div>
 
             <div id="payment-container">
-                <h3 style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; color: var(--accent); margin-bottom: 16px;">Credit Card Information</h3>
+                <h3 style="font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 16px;">Payment Details</h3>
                 <div id="payment-form"></div>
-                <button type="button" id="pay-btn" class="action-btn" style="width: 100%;">Authorize Payment</button>
+                <button type="button" id="pay-btn" class="action-btn" style="width: 100%;">Process Payment</button>
             </div>
         </div>
     </div>
@@ -413,17 +396,17 @@
         function renderCart() {
             cartItemsDiv.innerHTML = '';
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0;">Your cart is empty.</p>';
+                cartItemsDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 30px 0;">Cart is empty.</p>';
                 checkoutBtn.disabled = true;
             } else {
                 cart.forEach((item, index) => {
                     cartItemsDiv.innerHTML += `
                         <div class="checkout-row">
                             <div>
-                                <span style="font-weight:600; display:block; font-size: 14px; color: var(--text-main);">${item.name}</span>
-                                <button type="button" class="btn-remove-item" onclick="window.removeFromCart(${index})">Remove Item</button>
+                                <span style="font-weight:500; display:block; font-size: 13px; color: var(--text-main);">${item.name}</span>
+                                <button type="button" class="btn-remove-item" onclick="window.removeFromCart(${index})">Remove</button>
                             </div>
-                            <span style="font-weight:800; font-size: 16px; color: var(--text-main);">${item.price.toFixed(2)} ${currentCurrency}</span>
+                            <span style="font-weight:600; font-size: 14px; color: var(--text-main);">${item.price.toFixed(2)} ${currentCurrency}</span>
                         </div>
                     `;
                 });
@@ -447,7 +430,7 @@
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
             
-            showMessage(`Securing entry payload via proxy context...`, 'info');
+            showMessage(`Connecting to secure gateway...`, 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-remove-item').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
             envSelector.disabled = true;
@@ -476,9 +459,9 @@
                     tokenRaw = rawText.replace(/^"|"$/g, "").trim();
                 }
 
-                if (!tokenRaw) throw new Error("Security frame parsing failed.");
+                if (!tokenRaw) throw new Error("Authentication failed.");
 
-                showMessage('Connecting to merchant bank vault integrations...', 'info');
+                showMessage('Loading secure components...', 'info');
                 
                 const payloadBase64 = tokenRaw.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
@@ -501,11 +484,9 @@
                         script.crossOrigin = "anonymous";
                     }
                     script.onload = () => setTimeout(resolve, 200);
-                    script.onerror = () => reject(new Error("Bank toolkit asset failure."));
+                    script.onerror = () => reject(new Error("Component load error."));
                     document.body.appendChild(script);
                 });
-
-                showMessage('Injecting secure credit card fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
@@ -523,7 +504,7 @@
                 payBtn.onclick = processPayment;
 
             } catch (error) {
-                showMessage(`Gateway Handshake Failed: ${error.message}`, 'error');
+                showMessage(`Error: ${error.message}`, 'error');
                 checkoutBtn.disabled = false;
                 isCheckingOut = false;
                 document.querySelectorAll('.add-to-cart-btn, .btn-remove-item').forEach(b => b.disabled = false);
@@ -535,7 +516,7 @@
 
         async function processPayment() {
             payBtn.disabled = true;
-            showMessage('Verifying card verification checks & 3DS...', 'info');
+            showMessage('Processing...', 'info');
             const selectedEnv = envSelector.value;
 
             try {
@@ -547,17 +528,17 @@
                         const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
                         paymentStatus = decodedPayload.status || decodedPayload.outcome; 
                     } catch (e) {
-                        console.warn("Could not trace internal payload headers.");
+                        console.warn("Payload decode error.");
                     }
                 }
 
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
-                    showMessage('Order placed successfully! Token stored.', 'success');
+                    showMessage('Payment Authorized!', 'success');
                     paymentContainer.style.display = 'none';
                     return;
                 }
                 
-                showMessage(`Settling transaction authorization parameters...`, 'info');
+                showMessage(`Finalizing...`, 'info');
                 
                 const finalChargeResponse = await fetch('/process-payment', {
                     method: 'POST',
@@ -570,14 +551,14 @@
 
                 const chargeResultRaw = await finalChargeResponse.text();
                 if (!finalChargeResponse.ok) {
-                    throw new Error(`Transaction Terminated: ${chargeResultRaw}`);
+                    throw new Error(`${chargeResultRaw}`);
                 }
 
-                showMessage('Payment complete! Thank you for your purchase.', 'success');
+                showMessage('Transaction complete.', 'success');
                 paymentContainer.style.display = 'none';
                 
             } catch (error) {
-                showMessage(error.message || 'Payment loop clearance failure.', 'error');
+                showMessage(error.message || 'Payment failed.', 'error');
                 payBtn.disabled = false;
             }
         }
