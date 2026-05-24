@@ -8,19 +8,33 @@
     
     <style>
         :root {
-            --bg: #f8fafc;
+            /* VIBRANT NEW COLOR PALETTE */
+            --bg: #f5f3ff; /* Very faint Violet background */
             --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --accent: #0f172a;
-            --accent-hover: #334155;
-            --success-bg: #f0fdf4;
-            --success-text: #16a34a;
-            --error-bg: #fef2f2;
-            --error-text: #dc2626;
-            --info-bg: #f0f9ff;
-            --info-text: #0369a1;
+            
+            --text-main: #0f172a; /* Slate 900 - Navy for text */
+            --text-muted: #64748b; /* Slate 500 - Gray for descriptions */
+            --border: #e9e3ff; /* Light Violet border */
+            
+            /* Primary Action Color - Indigo */
+            --accent: #4f46e5; /* Indigo 600 */
+            --accent-hover: #3730a3; /* Indigo 800 */
+            
+            /* Highlight Color - Fuchsia */
+            --highlight: #d946ef; /* Fuchsia 600 - used for prices */
+            --highlight-hover: #a21caf; /* Fuchsia 700 */
+            
+            /* Background tints */
+            --product-blue-bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); /* Light blue gradient */
+            --product-purple-bg: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); /* Light purple gradient */
+
+            /* Status Colors (kept standard but slightly brighter) */
+            --success-bg: #ecfdf5;
+            --success-text: #059669;
+            --error-bg: #fff1f2;
+            --error-text: #e11d48;
+            --info-bg: #eff6ff;
+            --info-text: #2563eb;
         }
 
         * { 
@@ -39,25 +53,36 @@
 
         /* Navigation Bar Header */
         .navbar {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
-            padding: 20px 40px;
+            padding: 16px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 50;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.05); /* Slight violet tint shadow */
         }
 
-        .nav-brand { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; }
+        .nav-brand { 
+            font-size: 24px; 
+            font-weight: 800; 
+            letter-spacing: -1px; 
+            cursor: pointer;
+            /* Dynamic Gradient Logo */
+            background: linear-gradient(90deg, var(--accent) 0%, var(--highlight) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .nav-links { display: flex; gap: 32px; list-style: none; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: 14px; }
-        .nav-links a:hover { color: var(--text-main); }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 14px; }
+        .nav-links a:hover { color: var(--accent); }
         
-        .nav-actions { display: flex; align-items: center; gap: 24px; }
+        .nav-actions { display: flex; align-items: center; gap: 20px; color: var(--text-muted);}
+        .nav-actions svg:hover { color: var(--highlight); cursor: pointer;}
         
         /* Store Main Body Layout */
         .store-container {
@@ -65,7 +90,7 @@
             margin: 0 auto;
             padding: 60px 40px;
             display: grid;
-            grid-template-columns: 1fr 400px;
+            grid-template-columns: 1fr 420px;
             gap: 48px;
         }
 
@@ -74,91 +99,106 @@
         }
 
         /* Product Catalog Grid Layout */
-        .catalog-headline { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 24px; }
+        .catalog-headline { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
             gap: 30px; 
         }
 
         .store-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.04);
         }
         .store-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-            border-color: #cbd5e1;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.12);
+            border-color: #d1c4e9; /* Medium violet */
         }
 
         /* Clean placeholder graphic block */
         .product-image-container {
-            background: #f1f5f9;
             height: 240px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
         }
-        .product-image-container svg { width: 64px; height: 64px; color: #94a3b8; }
+        .product-image-container svg { width: 72px; height: 72px; }
 
-        .product-details { padding: 24px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-details h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-        .product-details p { color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 20px; }
+        /* Specific Gradient Tints for Image Containers */
+        #img-card-1 { background: var(--product-blue-bg); color: #0284c7; } /* Blue tint icon */
+        #img-card-2 { background: var(--product-purple-bg); color: #7c3aed; } /* Purple tint icon */
+
+        .product-details { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-details h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
+        .product-details p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
         
-        .product-footer { display: flex; justify-content: space-between; align-items: center; }
-        .product-price { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; gap: 15px;}
+        
+        /* Highlight Prices with Fuchsia */
+        .product-price { font-size: 20px; font-weight: 800; letter-spacing: -1px; color: var(--highlight); }
+        .currency-label { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 2px;}
 
-        /* Standard Storefront Interactive Buttons */
+        /* Standard Storefront Interactive Buttons (Indigo theme) */
         .action-btn {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: 600;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 700;
             font-size: 14px;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+            letter-spacing: -0.2px;
         }
-        .action-btn:hover { background: var(--accent-hover); }
-        .action-btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        .action-btn:hover { background: var(--accent-hover); box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3); }
+        .action-btn:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
 
         /* Shopping Sidebar Checkout Sheet */
         .cart-panel {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.05);
             height: fit-content;
             position: sticky;
             top: 110px;
         }
-        .cart-panel h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; }
+        .cart-panel h2 { font-size: 22px; font-weight: 800; margin-bottom: 30px; letter-spacing: -1px; }
 
-        .cart-items-container { max-height: 240px; overflow-y: auto; margin-bottom: 20px; }
+        .cart-items-container { max-height: 240px; overflow-y: auto; margin-bottom: 24px; padding-right: 5px; }
+        
+        /* Customize Scrollbar for cart items */
+        .cart-items-container::-webkit-scrollbar { width: 5px; }
+        .cart-items-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .cart-items-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
         
         .checkout-row {
             display: flex;
             justify-content: space-between;
-            padding: 14px 0;
-            font-size: 14px;
+            padding: 16px 0;
+            font-size: 15px;
             border-bottom: 1px solid var(--border);
         }
+        
+        /* Bold Total Price highlighted in Fuchsia */
         .checkout-row.total {
-            border-top: 2px dashed var(--border);
+            border-top: 2px dashed #d1c4e9;
             border-bottom: none;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-main);
-            padding-top: 20px;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--highlight);
+            padding-top: 24px;
             margin-top: 10px;
+            letter-spacing: -1px;
         }
 
         .btn-remove-item {
@@ -166,62 +206,66 @@
             background: transparent;
             border: none;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 4px;
+            margin-top: 5px;
         }
-        .btn-remove-item:hover { text-decoration: underline; }
+        .btn-remove-item:hover { text-decoration: underline; color: #b91c1c; }
 
         /* Form Dropdown Select Layout wrappers */
-        .form-select-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
-        .form-select-group label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-select-group { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
+        .form-select-group label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         .form-select-group select {
-            padding: 12px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 12px;
             border: 1px solid var(--border);
             font-weight: 600;
             font-size: 14px;
-            background: #f8fafc;
+            background: #fdfcfe; /* Subtle lavender tint */
+            color: var(--text-main);
             outline: none;
             cursor: pointer;
         }
+        .form-select-group select:focus { border-color: var(--highlight); box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1); }
 
         .checkbox-container {
-            margin-bottom: 24px;
-            padding: 14px;
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .checkbox-container input { width: 16px; height: 16px; cursor: pointer; }
-        .checkbox-container label { font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; }
-
-        /* Secure payment iFrame block */
-        #payment-container {
-            display: none;
-            margin-top: 24px;
-            background: #f8fafc;
+            margin-bottom: 30px;
+            padding: 16px;
+            background: #fdfcfe;
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
-        #payment-form { min-height: 60px; margin-bottom: 20px; }
+        .checkbox-container input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+        .checkbox-container label { font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: pointer; }
+
+        /* Secure payment iFrame area */
+        #payment-container {
+            display: none;
+            margin-top: 30px;
+            background: #fdfcfe;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.03);
+        }
+        #payment-form { min-height: 60px; margin-bottom: 24px; }
 
         .status-alert {
-            margin-top: 20px;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
             display: none;
             text-align: center;
+            letter-spacing: -0.2px;
         }
-        .status-alert.info { background: var(--info-bg); color: var(--info-text); }
-        .status-alert.success { background: var(--success-bg); color: var(--success-text); }
-        .status-alert.error { background: var(--error-bg); color: var(--error-text); }
+        .status-alert.info { background: var(--info-bg); color: var(--info-text); border: 1px solid #bfdbfe; }
+        .status-alert.success { background: var(--success-bg); color: var(--success-text); border: 1px solid #a7f3d0; }
+        .status-alert.error { background: var(--error-bg); color: var(--error-text); border: 1px solid #fecdd3; }
     </style>
 </head>
 <body>
@@ -234,8 +278,8 @@
             <li><a href="#">Support</a></li>
         </ul>
         <div class="nav-actions">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap='round' stroke-linejoin='round'><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap='round' stroke-linejoin='round'><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
         </div>
     </nav>
 
@@ -245,7 +289,7 @@
             <div class="product-grid" id="product-list">
                 
                 <div class="store-card">
-                    <div class="product-image-container">
+                    <div class="product-image-container" id="img-card-1">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                     </div>
                     <div class="product-details">
@@ -261,7 +305,7 @@
                 </div>
 
                 <div class="store-card">
-                    <div class="product-image-container">
+                    <div class="product-image-container" id="img-card-2">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                     </div>
                     <div class="product-details">
@@ -283,7 +327,7 @@
             <h2>Order Summary</h2>
             
             <div class="form-select-group">
-                <label for="currency-selector">Currency</label>
+                <label for="currency-selector">Payment Currency</label>
                 <select id="currency-selector">
                     <option value="USD">USD ($)</option>
                     <option value="JOD">JOD (د.أ)</option>
@@ -295,7 +339,7 @@
             </div>
 
             <div class="form-select-group">
-                <label for="env-selector">Payment Gateway Environment</label>
+                <label for="env-selector">Payment Gateway Layer</label>
                 <select id="env-selector">
                     <option value="prod">BAE / CyberSource (LIVE PROD)</option>
                     <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
@@ -312,11 +356,11 @@
                 <span id="cart-total-price">0.00 USD</span>
             </div>
 
-            <button type="button" id="checkout-btn" class="action-btn" style="width: 100%; margin-top: 20px; padding: 16px;" disabled>Proceed to Checkout</button>
+            <button type="button" id="checkout-btn" class="action-btn" style="width: 100%; margin-top: 30px; padding: 18px;" disabled>Proceed to Secure Checkout</button>
             <div id="message" class="status-alert"></div>
 
             <div id="payment-container">
-                <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 16px;">Credit Card Information</h3>
+                <h3 style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; color: var(--accent); margin-bottom: 16px;">Credit Card Information</h3>
                 <div id="payment-form"></div>
                 <button type="button" id="pay-btn" class="action-btn" style="width: 100%;">Authorize Payment</button>
             </div>
@@ -376,10 +420,10 @@
                     cartItemsDiv.innerHTML += `
                         <div class="checkout-row">
                             <div>
-                                <span style="font-weight:600; display:block;">${item.name}</span>
-                                <button type="button" class="btn-remove-item" onclick="window.removeFromCart(${index})">Remove</button>
+                                <span style="font-weight:600; display:block; font-size: 14px; color: var(--text-main);">${item.name}</span>
+                                <button type="button" class="btn-remove-item" onclick="window.removeFromCart(${index})">Remove Item</button>
                             </div>
-                            <span style="font-weight:700;">${item.price.toFixed(2)} ${currentCurrency}</span>
+                            <span style="font-weight:800; font-size: 16px; color: var(--text-main);">${item.price.toFixed(2)} ${currentCurrency}</span>
                         </div>
                     `;
                 });
