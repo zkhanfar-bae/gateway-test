@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Enterprise Gateway Engine</title>
+    <title>TechStore | Checkout</title>
     <link rel="icon" href="data:,">
     
     <style>
@@ -23,7 +23,7 @@
 
         * { 
             box-sizing: border-box; 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -37,7 +37,6 @@
             overflow-x: hidden;
         }
 
-        /* App Layout Architecture */
         .app-layout {
             display: grid;
             grid-template-columns: 340px 1fr;
@@ -50,7 +49,6 @@
             .sidebar { border-right: none !important; border-bottom: 1px solid var(--border); position: relative !important; height: auto !important; }
         }
 
-        /* Control Sidebar Navigation */
         .sidebar {
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
@@ -114,7 +112,6 @@
         .config-card input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--violet); cursor: pointer; margin-top: 2px;}
         .config-card label { font-size: 13px; color: var(--text-secondary); font-weight: 500; cursor: pointer; line-height: 1.4; }
 
-        /* Main Operations Workspace */
         .workspace {
             padding: 40px 60px;
             max-width: 1200px;
@@ -145,7 +142,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Functional Modules Context Layout */
         .module-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -156,7 +152,6 @@
 
         .panel-heading { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
 
-        /* Inventory Stack Modules */
         .catalog-stack { display: flex; flex-direction: column; gap: 16px; }
         
         .item-tile {
@@ -186,7 +181,6 @@
         .item-action { text-align: right; }
         .tile-price { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.5px; }
 
-        /* Dynamic Interaction Elements */
         .action-btn {
             background: transparent;
             border: 1px solid rgba(255,255,255,0.15);
@@ -199,7 +193,6 @@
         }
         .item-tile .action-btn:hover { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
 
-        /* Processing Dashboard Sheet */
         .billing-panel {
             background: rgba(30, 41, 59, 0.5);
             border: 1px solid var(--border);
@@ -236,7 +229,6 @@
         }
         .btn-trash:hover { text-decoration: underline; }
 
-        /* Execution Master Control Button */
         .master-trigger {
             background: var(--gradient-primary);
             color: #fff;
@@ -261,7 +253,6 @@
             cursor: not-allowed;
         }
 
-        /* Secure Token Injected Form Panel Wrapper */
         #payment-container {
             display: none;
             margin-top: 24px;
@@ -272,13 +263,12 @@
         }
         #payment-form { min-height: 60px; margin-bottom: 20px; }
 
-        /* Status Output Log Panel */
         .terminal-log {
             margin-top: 20px;
             padding: 14px;
             border-radius: 10px;
             font-size: 13px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-family: "SFMono-Regular", Consolas, Menlo, monospace;
             font-weight: 500;
             display: none;
             border-left: 4px solid transparent;
@@ -295,11 +285,11 @@
             <div>
                 <div class="brand-zone">
                     <div class="brand-icon"></div>
-                    <h2>TechStore Core</h2>
+                    <h2>TechStore</h2>
                 </div>
                 
                 <div class="control-group">
-                    <label for="env-selector">Network Topology Target</label>
+                    <label for="env-selector">Select Environment</label>
                     <select id="env-selector">
                         <option value="prod">BAE / CyberSource (LIVE PROD)</option>
                         <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
@@ -309,21 +299,21 @@
 
             <div class="config-card">
                 <input type="checkbox" id="save-card-cb">
-                <label for="save-card-cb">Vault context mapping parameters for future recurring allocation loops.</label>
+                <label for="save-card-cb">Save card details for future monthly payments.</label>
             </div>
         </div>
 
         <div class="workspace">
             <div class="workspace-header">
                 <div>
-                    <h1>Payment Node Provisioning</h1>
+                    <h1>Checkout System</h1>
                 </div>
-                <div class="status-pill">PROXY MONITOR UP</div>
+                <div class="status-pill">PROXY READY</div>
             </div>
 
             <div class="module-grid">
                 <div>
-                    <h2 class="panel-heading">Hardware Asset Allocation</h2>
+                    <h2 class="panel-heading">Available Products</h2>
                     <div class="catalog-stack" id="product-list">
                         <div class="item-tile">
                             <div class="item-meta">
@@ -331,43 +321,43 @@
                                 <p>Standard development pipeline sandbox</p>
                             </div>
                             <div class="item-action">
-                                <div class="tile-price">0.10 JOD</div>
-                                <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Queue Asset</button>
+                                <div class="tile-price">0.10 USD</div>
+                                <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
                             </div>
                         </div>
 
                         <div class="item-tile">
                             <div class="item-meta">
                                 <h3>Pro Dashboard</h3>
-                                <p>Enterprise visualization suite execution matrix</p>
+                                <p>Enterprise dashboard access module</p>
                             </div>
                             <div class="item-action">
-                                <div class="tile-price">0.15 JOD</div>
-                                <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Queue Asset</button>
+                                <div class="tile-price">0.15 USD</div>
+                                <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h2 class="panel-heading">Settlement Manifest</h2>
+                    <h2 class="panel-heading">Cart Summary</h2>
                     <div class="billing-panel">
                         <div id="cart-items">
-                            <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Manifest configuration empty.</p>
+                            <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Your cart is empty.</p>
                         </div>
 
                         <div class="receipt-row total">
-                            <span>Aggregated Total</span>
-                            <span id="cart-total-price">0.00 JOD</span>
+                            <span>Total Price</span>
+                            <span id="cart-total-price">0.00 USD</span>
                         </div>
 
-                        <button type="button" id="checkout-btn" class="master-trigger" disabled>Execute Token Handshake</button>
+                        <button type="button" id="checkout-btn" class="master-trigger" disabled>Proceed to Checkout</button>
                         <div id="message" class="terminal-log"></div>
 
                         <div id="payment-container">
-                            <h2 class="panel-heading" style="font-size:11px; margin-bottom:16px;">Injected Secure Fields</h2>
+                            <h2 class="panel-heading" style="font-size:11px; margin-bottom:16px;">Enter Card Details</h2>
                             <div id="payment-form"></div>
-                            <button type="button" id="pay-btn" class="master-trigger" style="margin-top:0;">Finalize Asset Liquidation</button>
+                            <button type="button" id="pay-btn" class="master-trigger" style="margin-top:0;">Complete Payment</button>
                         </div>
                     </div>
                 </div>
@@ -413,7 +403,7 @@
         function renderCart() {
             cartItemsDiv.innerHTML = '';
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Manifest configuration empty.</p>';
+                cartItemsDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Your cart is empty.</p>';
                 checkoutBtn.disabled = true;
             } else {
                 cart.forEach((item, index) => {
@@ -421,20 +411,20 @@
                         <div class="receipt-row">
                             <div>
                                 <span style="font-weight:600; display:block;">${item.name}</span>
-                                <button type="button" class="btn-trash" onclick="window.removeFromCart(${index})">Drop Asset</button>
+                                <button type="button" class="btn-trash" onclick="window.removeFromCart(${index})">Remove Item</button>
                             </div>
-                            <span style="font-weight:700; color:#fff;">${item.price.toFixed(2)} JOD</span>
+                            <span style="font-weight:700; color:#fff;">${item.price.toFixed(2)} USD</span>
                         </div>
                     `;
                 });
                 checkoutBtn.disabled = false;
             }
-            cartTotalPrice.textContent = `${getCartTotal()} JOD`;
+            cartTotalPrice.textContent = `${getCartTotal()} USD`;
         }
 
         function showMessage(text, type) {
             messageDiv.style.display = 'block';
-            messageDiv.textContent = `[system_log] >> ${text}`;
+            messageDiv.textContent = `[Log] >> ${text}`;
             messageDiv.className = `terminal-log ${type}`;
         }
 
@@ -447,7 +437,7 @@
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
             
-            showMessage(`Handshaking node endpoints via proxy (${selectedEnv.toUpperCase()})...`, 'info');
+            showMessage(`Connecting to proxy server (${selectedEnv.toUpperCase()})...`, 'info');
             document.querySelectorAll('.add-to-cart-btn, .btn-trash').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
             envSelector.disabled = true;
@@ -474,9 +464,9 @@
                     tokenRaw = rawText.replace(/^"|"$/g, "").trim();
                 }
 
-                if (!tokenRaw) throw new Error("Signature verification failed.");
+                if (!tokenRaw) throw new Error("Security verification token failed.");
 
-                showMessage('Handshake verified. Fetching encrypted vault module script dynamically...', 'info');
+                showMessage('Token received. Downloading bank security library...', 'info');
                 
                 const payloadBase64 = tokenRaw.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
@@ -499,11 +489,11 @@
                         script.crossOrigin = "anonymous";
                     }
                     script.onload = () => setTimeout(resolve, 200);
-                    script.onerror = () => reject(new Error("Failed to load platform core component libraries."));
+                    script.onerror = () => reject(new Error("Failed to load secure platform libraries."));
                     document.body.appendChild(script);
                 });
 
-                showMessage('Decrypting structural payment components...', 'info');
+                showMessage('Building payment fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
@@ -521,7 +511,7 @@
                 payBtn.onclick = processPayment;
 
             } catch (error) {
-                showMessage(`Topology setup aborted: ${error.message}`, 'error');
+                showMessage(`Setup failed: ${error.message}`, 'error');
                 checkoutBtn.disabled = false;
                 isCheckingOut = false;
                 document.querySelectorAll('.add-to-cart-btn, .btn-trash').forEach(b => b.disabled = false);
@@ -532,7 +522,7 @@
 
         async function processPayment() {
             payBtn.disabled = true;
-            showMessage('Initializing global compliance 3DS rules checks...', 'info');
+            showMessage('Running secure 3D-Secure bank checks...', 'info');
             const selectedEnv = envSelector.value;
 
             try {
@@ -544,17 +534,17 @@
                         const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
                         paymentStatus = decodedPayload.status || decodedPayload.outcome; 
                     } catch (e) {
-                        console.warn("Signature trace failed reading metadata.");
+                        console.warn("Could not parse data trace metadata.");
                     }
                 }
 
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
-                    showMessage('Settlement authorized instantly inside secure memory loop!', 'success');
+                    showMessage('Payment Authorized successfully inside secure loop!', 'success');
                     paymentContainer.style.display = 'none';
                     return;
                 }
                 
-                showMessage(`Redirecting charge token array to clearing bank proxy pool...`, 'info');
+                showMessage(`Sending payment token to settlement pool...`, 'info');
                 
                 const finalChargeResponse = await fetch('/process-payment', {
                     method: 'POST',
@@ -567,14 +557,14 @@
 
                 const chargeResultRaw = await finalChargeResponse.text();
                 if (!finalChargeResponse.ok) {
-                    throw new Error(`Execution Denied: ${chargeResultRaw}`);
+                    throw new Error(`Charge Failed: ${chargeResultRaw}`);
                 }
 
-                showMessage('Settlement parameters resolved completely. Assets allocated.', 'success');
+                showMessage('Transaction fully successful! Funds processed.', 'success');
                 paymentContainer.style.display = 'none';
                 
             } catch (error) {
-                showMessage(error.message || 'Fatal execution failure routing to proxy bank.', 'error');
+                showMessage(error.message || 'Payment execution failed at the routing bank.', 'error');
                 payBtn.disabled = false;
             }
         }
