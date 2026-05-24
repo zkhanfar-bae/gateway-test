@@ -3,373 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Multi-Currency Checkout</title>
+    <title>TechStore | Premium Retail Store</title>
     <link rel="icon" href="data:,">
     
     <style>
         :root {
-            --bg: #090d16;
-            --sidebar-bg: #111827;
-            --surface: #1e293b;
-            --border: rgba(255, 255, 255, 0.08);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --cyan: #06b6d4;
-            --violet: #8b5cf6;
-            --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
-            --success: #10b981;
-            --error: #ef4444;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #0f172a;
+            --accent-hover: #334155;
+            --success-bg: #f0fdf4;
+            --success-text: #16a34a;
+            --error-bg: #fef2f2;
+            --error-text: #dc2626;
+            --info-bg: #f0f9ff;
+            --info-text: #0369a1;
         }
 
         * { 
             box-sizing: border-box; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             margin: 0;
             padding: 0;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease-in-out;
         }
 
         body { 
             background: var(--bg); 
-            color: var(--text-primary); 
-            min-height: 100vh;
-            display: flex;
-            overflow-x: hidden;
-        }
-
-        .app-layout {
-            display: grid;
-            grid-template-columns: 340px 1fr;
-            width: 100%;
+            color: var(--text-main); 
             min-height: 100vh;
         }
 
-        @media (max-width: 1024px) {
-            .app-layout { grid-template-columns: 1fr; }
-            .sidebar { border-right: none !important; border-bottom: 1px solid var(--border); position: relative !important; height: auto !important; }
-        }
-
-        .sidebar {
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
-            padding: 40px 24px;
+        /* Navigation Bar Header */
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 40px;
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
+            align-items: center;
             position: sticky;
             top: 0;
-            height: 100vh;
+            z-index: 50;
         }
 
-        .brand-zone {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-        }
-
-        .brand-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--gradient-primary);
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-        }
-
-        .brand-zone h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-
-        .control-group { margin-bottom: 24px; }
-        .control-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .nav-brand { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: 14px; }
+        .nav-links a:hover { color: var(--text-main); }
         
-        .sidebar select {
-            width: 100%;
-            padding: 14px;
-            background: #1f2937;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: #fff;
-            font-weight: 600;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2'><polyline points='6 9 12 15 18 9'></polyline></svg>");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            background-size: 16px;
-        }
-        .sidebar select:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(6, 182, 212, 0.15); }
-
-        .config-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 16px;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-        .config-card input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--violet); cursor: pointer; margin-top: 2px;}
-        .config-card label { font-size: 13px; color: var(--text-secondary); font-weight: 500; cursor: pointer; line-height: 1.4; }
-
-        .workspace {
-            padding: 40px 60px;
-            max-width: 1200px;
-            width: 100%;
+        .nav-actions { display: flex; align-items: center; gap: 24px; }
+        
+        /* Store Main Body Layout */
+        .store-container {
+            max-width: 1400px;
             margin: 0 auto;
-        }
-
-        @media (max-width: 640px) { .workspace { padding: 24px 16px; } }
-
-        .workspace-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 24px;
-        }
-        .workspace-header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
-
-        .status-pill {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--success);
-            padding: 6px 14px;
-            border-radius: 99px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .module-grid {
+            padding: 60px 40px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: start;
+            grid-template-columns: 1fr 400px;
+            gap: 48px;
         }
-        @media (max-width: 1200px) { .module-grid { grid-template-columns: 1fr; } }
 
-        .panel-heading { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+        @media (max-width: 1100px) {
+            .store-container { grid-template-columns: 1fr; gap: 32px; padding: 30px 20px; }
+        }
 
-        .catalog-stack { display: flex; flex-direction: column; gap: 16px; }
-        
-        .item-tile {
+        /* Product Catalog Grid Layout */
+        .catalog-headline { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 24px; }
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 30px; 
+        }
+
+        .store-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
         }
-        .item-tile::before {
-            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: transparent;
+        .store-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
         }
-        .item-tile:hover {
-            transform: translateX(4px);
-            border-color: rgba(6, 182, 212, 0.3);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+
+        /* Clean placeholder graphic block */
+        .product-image-container {
+            background: #f1f5f9;
+            height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-        .item-tile:hover::before { background: var(--cyan); }
+        .product-image-container svg { width: 64px; height: 64px; color: #94a3b8; }
 
-        .item-meta h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-        .item-meta p { color: var(--text-secondary); font-size: 13px; }
+        .product-details { padding: 24px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-details h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .product-details p { color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 20px; }
+        
+        .product-footer { display: flex; justify-content: space-between; align-items: center; }
+        .product-price { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
 
-        .item-action { text-align: right; }
-        .tile-price { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.5px; }
-
+        /* Standard Storefront Interactive Buttons */
         .action-btn {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.15);
+            background: var(--accent);
             color: #fff;
-            padding: 8px 16px;
+            border: none;
+            padding: 12px 20px;
             border-radius: 10px;
-            font-size: 13px;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .item-tile .action-btn:hover { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
+        .action-btn:hover { background: var(--accent-hover); }
+        .action-btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
-        .billing-panel {
-            background: rgba(30, 41, 59, 0.5);
+        /* Shopping Sidebar Checkout Sheet */
+        .cart-panel {
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 32px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            height: fit-content;
+            position: sticky;
+            top: 110px;
         }
+        .cart-panel h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; }
 
-        .receipt-row {
+        .cart-items-container { max-height: 240px; overflow-y: auto; margin-bottom: 20px; }
+        
+        .checkout-row {
             display: flex;
             justify-content: space-between;
             padding: 14px 0;
             font-size: 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid var(--border);
         }
-        .receipt-row.total {
-            border-top: 1px dashed rgba(255,255,255,0.15);
+        .checkout-row.total {
+            border-top: 2px dashed var(--border);
             border-bottom: none;
-            font-size: 22px;
-            font-weight: 800;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
             padding-top: 20px;
             margin-top: 10px;
-            color: #fff;
         }
 
-        .btn-trash {
-            color: var(--error);
+        .btn-remove-item {
+            color: var(--error-text);
             background: transparent;
             border: none;
-            cursor: pointer;
             font-size: 12px;
             font-weight: 600;
+            cursor: pointer;
             margin-top: 4px;
         }
-        .btn-trash:hover { text-decoration: underline; }
+        .btn-remove-item:hover { text-decoration: underline; }
 
-        .master-trigger {
-            background: var(--gradient-primary);
-            color: #fff;
-            border: none;
-            border-radius: 14px;
-            padding: 16px 24px;
-            font-weight: 700;
-            font-size: 15px;
-            width: 100%;
+        /* Form Dropdown Select Layout wrappers */
+        .form-select-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
+        .form-select-group label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-select-group select {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 14px;
+            background: #f8fafc;
+            outline: none;
             cursor: pointer;
-            margin-top: 24px;
-            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.25);
-        }
-        .master-trigger:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);
-        }
-        .master-trigger:disabled {
-            background: #334155;
-            color: #64748b;
-            box-shadow: none;
-            cursor: not-allowed;
         }
 
+        .checkbox-container {
+            margin-bottom: 24px;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .checkbox-container input { width: 16px; height: 16px; cursor: pointer; }
+        .checkbox-container label { font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; }
+
+        /* Secure payment iFrame block */
         #payment-container {
             display: none;
             margin-top: 24px;
-            background: rgba(9, 13, 22, 0.6);
+            background: #f8fafc;
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
+            border-radius: 12px;
+            padding: 20px;
         }
         #payment-form { min-height: 60px; margin-bottom: 20px; }
 
-        .terminal-log {
+        .status-alert {
             margin-top: 20px;
             padding: 14px;
             border-radius: 10px;
             font-size: 13px;
-            font-family: "SFMono-Regular", Consolas, Menlo, monospace;
-            font-weight: 500;
+            font-weight: 600;
             display: none;
-            border-left: 4px solid transparent;
+            text-align: center;
         }
-        .terminal-log.info { background: rgba(6,182,212,0.06); color: var(--cyan); border-left-color: var(--cyan); }
-        .terminal-log.success { background: rgba(16,185,129,0.06); color: var(--success); border-left-color: var(--success); }
-        .terminal-log.error { background: rgba(239,68,68,0.06); color: var(--error); border-left-color: var(--error); }
+        .status-alert.info { background: var(--info-bg); color: var(--info-text); }
+        .status-alert.success { background: var(--success-bg); color: var(--success-text); }
+        .status-alert.error { background: var(--error-bg); color: var(--error-text); }
     </style>
 </head>
 <body>
 
-    <div class="app-layout">
-        <div class="sidebar">
-            <div>
-                <div class="brand-zone">
-                    <div class="brand-icon"></div>
-                    <h2>TechStore</h2>
-                </div>
-                
-                <div class="control-group">
-                    <label for="env-selector">Select Environment</label>
-                    <select id="env-selector">
-                        <option value="prod">BAE / CyberSource (LIVE PROD)</option>
-                        <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
-                    </select>
-                </div>
-            </div>
+    <nav class="navbar">
+        <div class="nav-brand">TechStore</div>
+        <ul class="nav-links">
+            <li><a href="#">Shop</a></li>
+            <li><a href="#">New Arrivals</a></li>
+            <li><a href="#">Support</a></li>
+        </ul>
+        <div class="nav-actions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap='round' stroke-linejoin='round'><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        </div>
+    </nav>
 
-            <div class="config-card">
-                <input type="checkbox" id="save-card-cb">
-                <label for="save-card-cb">Save card details for future monthly payments.</label>
+    <div class="store-container">
+        <div>
+            <h2 class="catalog-headline">Explore Products</h2>
+            <div class="product-grid" id="product-list">
+                
+                <div class="store-card">
+                    <div class="product-image-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    </div>
+                    <div class="product-details">
+                        <div>
+                            <h3>Basic API Key</h3>
+                            <p>Get instant cloud processing execution capabilities across our global edge integration pipeline node hubs seamlessly.</p>
+                        </div>
+                        <div class="product-footer">
+                            <div class="product-price">0.10 <span class="currency-label">USD</span></div>
+                            <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="store-card">
+                    <div class="product-image-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                    </div>
+                    <div class="product-details">
+                        <div>
+                            <h3>Pro Dashboard</h3>
+                            <p>Unlock detailed operational tracking graphs, latency monitoring matrices, and continuous reporting log streams.</p>
+                        </div>
+                        <div class="product-footer">
+                            <div class="product-price">0.15 <span class="currency-label">USD</span></div>
+                            <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <div class="workspace">
-            <div class="workspace-header">
-                <div>
-                    <h1>Checkout System</h1>
-                </div>
-                <div class="status-pill">PROXY READY</div>
+        <div class="cart-panel">
+            <h2>Order Summary</h2>
+            
+            <div class="form-select-group">
+                <label for="currency-selector">Currency</label>
+                <select id="currency-selector">
+                    <option value="USD">USD ($)</option>
+                    <option value="JOD">JOD (د.أ)</option>
+                </select>
             </div>
 
-            <div class="module-grid">
-                <div>
-                    <h2 class="panel-heading">Available Products</h2>
-                    <div class="catalog-stack" id="product-list">
-                        <div class="item-tile">
-                            <div class="item-meta">
-                                <h3>Basic API Key</h3>
-                                <p>Standard development pipeline sandbox</p>
-                            </div>
-                            <div class="item-action">
-                                <div class="tile-price"><span class="price-val" data-base="0.10">0.10</span> <span class="currency-label">USD</span></div>
-                                <button type="button" class="action-btn add-to-cart-btn" data-id="1" data-name="Basic API Key" data-price="0.10">Add to Cart</button>
-                            </div>
-                        </div>
+            <div class="cart-items-container" id="cart-items">
+                <p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0;">Your cart is empty.</p>
+            </div>
 
-                        <div class="item-tile">
-                            <div class="item-meta">
-                                <h3>Pro Dashboard</h3>
-                                <p>Enterprise dashboard access module</p>
-                            </div>
-                            <div class="item-action">
-                                <div class="tile-price"><span class="price-val" data-base="0.15">0.15</span> <span class="currency-label">USD</span></div>
-                                <button type="button" class="action-btn add-to-cart-btn" data-id="2" data-name="Pro Dashboard" data-price="0.15">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="form-select-group">
+                <label for="env-selector">Payment Gateway Environment</label>
+                <select id="env-selector">
+                    <option value="prod">BAE / CyberSource (LIVE PROD)</option>
+                    <option value="dev">BAE / CyberSource (BAELAB DEV)</option>
+                </select>
+            </div>
 
-                <div>
-                    <h2 class="panel-heading">Cart Summary</h2>
-                    <div class="billing-panel">
-                        
-                        <div class="control-group" style="margin-bottom: 20px;">
-                            <label for="currency-selector" style="color: var(--text-secondary); font-size: 11px; font-weight:700;">Payment Currency</label>
-                            <select id="currency-selector" style="background: #1f2937; color:#fff; border: 1px solid var(--border); padding:10px; width:100%; border-radius:10px; font-weight:600;">
-                                <option value="USD">USD - United States Dollar</option>
-                                <option value="JOD">JOD - Jordanian Dinar</option>
-                            </select>
-                        </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="save-card-cb">
+                <label for="save-card-cb">Save card for future monthly renewals</label>
+            </div>
 
-                        <div id="cart-items">
-                            <p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Your cart is empty.</p>
-                        </div>
+            <div class="checkout-row total">
+                <span>Total</span>
+                <span id="cart-total-price">0.00 USD</span>
+            </div>
 
-                        <div class="receipt-row total">
-                            <span>Total Price</span>
-                            <span id="cart-total-price">0.00 USD</span>
-                        </div>
+            <button type="button" id="checkout-btn" class="action-btn" style="width: 100%; margin-top: 20px; padding: 16px;" disabled>Proceed to Checkout</button>
+            <div id="message" class="status-alert"></div>
 
-                        <button type="button" id="checkout-btn" class="master-trigger" disabled>Proceed to Checkout</button>
-                        <div id="message" class="terminal-log"></div>
-
-                        <div id="payment-container">
-                            <h2 class="panel-heading" style="font-size:11px; margin-bottom:16px;">Enter Card Details</h2>
-                            <div id="payment-form"></div>
-                            <button type="button" id="pay-btn" class="master-trigger" style="margin-top:0;">Complete Payment</button>
-                        </div>
-                    </div>
-                </div>
+            <div id="payment-container">
+                <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 16px;">Credit Card Information</h3>
+                <div id="payment-form"></div>
+                <button type="button" id="pay-btn" class="action-btn" style="width: 100%;">Authorize Payment</button>
             </div>
         </div>
     </div>
@@ -389,14 +338,9 @@
         const currencySelector = document.getElementById('currency-selector');
         const saveCardCheckbox = document.getElementById('save-card-cb');
 
-        // Handles switching the active display parameters globally when user clicks currency menu
         currencySelector.addEventListener('change', (e) => {
             currentCurrency = e.target.value;
-            
-            // Update catalog items currency labels dynamically
             document.querySelectorAll('.currency-label').forEach(el => el.textContent = currentCurrency);
-            
-            // Re-render cart and calculate values based on selected currency array
             renderCart();
         });
 
@@ -425,17 +369,17 @@
         function renderCart() {
             cartItemsDiv.innerHTML = '';
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 24px 0;">Your cart is empty.</p>';
+                cartItemsDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 30px 0;">Your cart is empty.</p>';
                 checkoutBtn.disabled = true;
             } else {
                 cart.forEach((item, index) => {
                     cartItemsDiv.innerHTML += `
-                        <div class="receipt-row">
+                        <div class="checkout-row">
                             <div>
                                 <span style="font-weight:600; display:block;">${item.name}</span>
-                                <button type="button" class="btn-trash" onclick="window.removeFromCart(${index})">Remove Item</button>
+                                <button type="button" class="btn-remove-item" onclick="window.removeFromCart(${index})">Remove</button>
                             </div>
-                            <span style="font-weight:700; color:#fff;">${item.price.toFixed(2)} ${currentCurrency}</span>
+                            <span style="font-weight:700;">${item.price.toFixed(2)} ${currentCurrency}</span>
                         </div>
                     `;
                 });
@@ -446,8 +390,8 @@
 
         function showMessage(text, type) {
             messageDiv.style.display = 'block';
-            messageDiv.textContent = `[Log] >> ${text}`;
-            messageDiv.className = `terminal-log ${type}`;
+            messageDiv.textContent = text;
+            messageDiv.className = `status-alert ${type}`;
         }
 
         let up; 
@@ -459,11 +403,11 @@
             const finalAmount = getCartTotal(); 
             const selectedEnv = envSelector.value; 
             
-            showMessage(`Connecting to proxy server (${selectedEnv.toUpperCase()})...`, 'info');
-            document.querySelectorAll('.add-to-cart-btn, .btn-trash').forEach(b => b.disabled = true);
+            showMessage(`Securing entry payload via proxy context...`, 'info');
+            document.querySelectorAll('.add-to-cart-btn, .btn-remove-item').forEach(b => b.disabled = true);
             saveCardCheckbox.disabled = true;
             envSelector.disabled = true;
-            currencySelector.disabled = true; // Block switching currency midway through dynamic session
+            currencySelector.disabled = true;
 
             try {
                 const response = await fetch('/capture-context', { 
@@ -473,7 +417,7 @@
                         amount: finalAmount,
                         origin: window.location.origin,
                         env: selectedEnv,
-                        currency: currentCurrency // 🌟 Passes selected string dynamically right into your upgraded server backend route!
+                        currency: currentCurrency
                     })
                 });
                 
@@ -488,9 +432,9 @@
                     tokenRaw = rawText.replace(/^"|"$/g, "").trim();
                 }
 
-                if (!tokenRaw) throw new Error("Security verification token failed.");
+                if (!tokenRaw) throw new Error("Security frame parsing failed.");
 
-                showMessage('Token received. Downloading bank security library...', 'info');
+                showMessage('Connecting to merchant bank vault integrations...', 'info');
                 
                 const payloadBase64 = tokenRaw.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
@@ -513,11 +457,11 @@
                         script.crossOrigin = "anonymous";
                     }
                     script.onload = () => setTimeout(resolve, 200);
-                    script.onerror = () => reject(new Error("Failed to load secure platform libraries."));
+                    script.onerror = () => reject(new Error("Bank toolkit asset failure."));
                     document.body.appendChild(script);
                 });
 
-                showMessage('Building payment fields...', 'info');
+                showMessage('Injecting secure credit card fields...', 'info');
                 
                 checkoutBtn.style.display = 'none';
                 paymentContainer.style.display = 'block';
@@ -535,10 +479,10 @@
                 payBtn.onclick = processPayment;
 
             } catch (error) {
-                showMessage(`Setup failed: ${error.message}`, 'error');
+                showMessage(`Gateway Handshake Failed: ${error.message}`, 'error');
                 checkoutBtn.disabled = false;
                 isCheckingOut = false;
-                document.querySelectorAll('.add-to-cart-btn, .btn-trash').forEach(b => b.disabled = false);
+                document.querySelectorAll('.add-to-cart-btn, .btn-remove-item').forEach(b => b.disabled = false);
                 saveCardCheckbox.disabled = false;
                 envSelector.disabled = false;
                 currencySelector.disabled = false;
@@ -547,7 +491,7 @@
 
         async function processPayment() {
             payBtn.disabled = true;
-            showMessage('Running secure 3D-Secure bank checks...', 'info');
+            showMessage('Verifying card verification checks & 3DS...', 'info');
             const selectedEnv = envSelector.value;
 
             try {
@@ -559,17 +503,17 @@
                         const decodedPayload = JSON.parse(atob(completeResult.split('.')[1]));
                         paymentStatus = decodedPayload.status || decodedPayload.outcome; 
                     } catch (e) {
-                        console.warn("Could not parse data trace metadata.");
+                        console.warn("Could not trace internal payload headers.");
                     }
                 }
 
                 if (paymentStatus === "COMPLETED" || paymentStatus === "AUTHORIZED") {
-                    showMessage('Payment Authorized successfully inside secure loop!', 'success');
+                    showMessage('Order placed successfully! Token stored.', 'success');
                     paymentContainer.style.display = 'none';
                     return;
                 }
                 
-                showMessage(`Sending payment token to settlement pool...`, 'info');
+                showMessage(`Settling transaction authorization parameters...`, 'info');
                 
                 const finalChargeResponse = await fetch('/process-payment', {
                     method: 'POST',
@@ -582,14 +526,14 @@
 
                 const chargeResultRaw = await finalChargeResponse.text();
                 if (!finalChargeResponse.ok) {
-                    throw new Error(`Charge Failed: ${chargeResultRaw}`);
+                    throw new Error(`Transaction Terminated: ${chargeResultRaw}`);
                 }
 
-                showMessage('Transaction fully successful! Funds processed.', 'success');
+                showMessage('Payment complete! Thank you for your purchase.', 'success');
                 paymentContainer.style.display = 'none';
                 
             } catch (error) {
-                showMessage(error.message || 'Payment execution failed at the routing bank.', 'error');
+                showMessage(error.message || 'Payment loop clearance failure.', 'error');
                 payBtn.disabled = false;
             }
         }
