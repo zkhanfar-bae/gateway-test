@@ -5,11 +5,11 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// --- NEW: GLOBAL SPY LOGGER ---
-// This catches and prints absolutely every request before anything else can intercept it
+// --- GLOBAL SPY LOGGER ---
+// Catches and logs inbound events before standard middleware interceptors
 app.use((req, res, next) => {
     if (req.url.includes('/api/webhook')) {
-        console.log(`🚨 [NETWORK EVENT] Cybersource sent a ${req.method} request to: ${req.url}`);
+        console.log(`🚨 [NETWORK EVENT] Inbound event detected via ${req.method} request at: ${req.url}`);
     }
     next();
 });
@@ -44,7 +44,7 @@ app.post('/capture-context', async (req, res) => {
             body: JSON.stringify({
                 targetOrigins: [targetOrigin, "https://ziadqula28.github.io"],
                 totalAmount: parseFloat(req.body.amount).toFixed(2),
-                currency: "JOD",
+                currency: "USD", // 🌟 Aligned to match your updated CyberSource profile currency profile
                 withDecode: false
             })
         });
@@ -97,15 +97,15 @@ app.post('/process-payment', async (req, res) => {
     }
 });
 
-// ROUTE 3: Webhook Listener (Changed from app.post to app.all)
+// ROUTE 3: Webhook Listener Endpoint Matrix
 app.all('/api/webhook', (req, res) => {
     try {
-        console.log('--- NEW WEBHOOK CAUGHT ---');
+        console.log('--- NEW WEBHOOK EVENT CAPTURED ---');
         console.log(`Method used: ${req.method}`);
         console.log('Body:', JSON.stringify(req.body, null, 2)); 
-        console.log('--------------------------');
+        console.log('----------------------------------');
 
-        res.status(200).send('Webhook received successfully');
+        res.status(200).send('Webhook processed successfully');
     } catch (error) {
         console.error('Webhook Handling Error:', error);
         res.status(500).send('Internal Server Error');
