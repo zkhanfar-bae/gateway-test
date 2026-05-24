@@ -6,7 +6,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // --- GLOBAL SPY LOGGER ---
-// Catches and logs inbound events before standard middleware interceptors
 app.use((req, res, next) => {
     if (req.url.includes('/api/webhook')) {
         console.log(`🚨 [NETWORK EVENT] Inbound event detected via ${req.method} request at: ${req.url}`);
@@ -23,6 +22,9 @@ app.post('/capture-context', async (req, res) => {
     try {
         const isDev = req.body.env === "dev";
         
+        // Dynamic fallback: use whatever currency the frontend selector sends, default to USD
+        const chosenCurrency = req.body.currency || "USD"; 
+
         const CAPTURE_URL = isDev
             ? "https://merchant-order-token.baelab.net/v1/payments/capture-context"
             : "https://merchant-order-token.bankaletihad.com/v1/payments/app2/capture-context";
@@ -44,7 +46,7 @@ app.post('/capture-context', async (req, res) => {
             body: JSON.stringify({
                 targetOrigins: [targetOrigin, "https://ziadqula28.github.io"],
                 totalAmount: parseFloat(req.body.amount).toFixed(2),
-                currency: "USD", // 🌟 Aligned to match your updated CyberSource profile currency profile
+                currency: chosenCurrency, // 🌟 Dynamically scales to USD or JOD based on user selection
                 withDecode: false
             })
         });
