@@ -494,11 +494,39 @@
                 const accept = await Accept(tokenRaw);
                 up = await accept.unifiedPayments();
 
+                // ---------------------------------------------------------
+                // 🚀 NEW FEATURE: Injecting Dummy Profile Data & Hiding Billing
+                // ---------------------------------------------------------
+                
+                // 1. Create the dummy data payload
+                const userProfileData = {
+                    firstName: "Ziad",
+                    lastName: "Customer",
+                    address1: "Mecca Street, Building 10",
+                    locality: "Amman",
+                    administrativeArea: "AM",
+                    postalCode: "11181",
+                    country: "JO",
+                    email: "ziad@techstore-demo.com",
+                    phoneNumber: "0791234567"
+                };
+
+                // 2. Inject it into the Gateway to auto-fill AND hide the fields
                 transientToken = await up.show({
                     containers: {
                         paymentSelection: "#payment-form" 
+                    },
+                    billTo: userProfileData, // Automatically fills the form with the object above
+                    
+                    features: {
+                        paymentCards: {
+                            billingAddress: {
+                                display: false // Forces the form to disappear, leaving only CC inputs!
+                            }
+                        }
                     }
                 });
+                // ---------------------------------------------------------
 
                 messageDiv.style.display = 'none';
                 payBtn.onclick = processPayment;
